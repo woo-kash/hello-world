@@ -3,28 +3,44 @@
  * Kid reads the story, types their solution, AI translates it, game runs.
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, ScrollView, ActivityIndicator, Alert,
 } from 'react-native';
 import { translateToCode, generateLessonSummary } from '../ai/missionAI';
 import LogicBlockView from '../components/LogicBlockView';
+import GameView from '../components/GameView';
+import { executeBlocks } from '../utils/gameEngine';
 
 export default function MissionScreen({ route, navigation }) {
   const { mission, difficulty = 'easy' } = route.params;
+  const hasGame = Boolean(mission.grid);
 
   const [userInput, setUserInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);   // AI translation result
+  const [result, setResult] = useState(null);
   const [attempts, setAttempts] = useState(0);
   const [missionWon, setMissionWon] = useState(false);
+
+  // Game animation state
+  const [animSteps, setAnimSteps] = useState(null);
+  const [stepIdx, setStepIdx] = useState(0);
   const inputRef = useRef(null);
+
+  // Advance animation frame every 550 ms
+  useEffect(() => {
+    if (!animSteps || stepIdx >= animSteps.length - 1) return;
+    const t = setTimeout(() => setStepIdx((i) => i + 1), 550);
+    return () => clearTimeout(t);
+  }, [animSteps, stepIdx]);
 
   async function handleSubmit() {
     if (!userInput.trim()) return;
     setLoading(true);
     setResult(null);
+    setAnimSteps(null);
+    setStepIdx(0);
 
     try {
       const aiResult = await translateToCode(userInput, mission.challenge, difficulty);
@@ -32,13 +48,19 @@ export default function MissionScreen({ route, navigation }) {
       setAttempts(newAttempts);
       setResult(aiResult);
 
+      // Kick off grid animation if this mission has a game
+      if (hasGame && aiResult.logicBlocks?.length) {
+        const steps = executeBlocks(aiResult.logicBlocks, mission);
+        setAnimSteps(steps);
+        setStepIdx(0);
+      }
+
       if (aiResult.success) {
         setMissionWon(true);
-        // Generate lesson summary after a short delay so kid sees the blocks first
         setTimeout(async () => {
           const summary = await generateLessonSummary(mission.concept, newAttempts, difficulty);
           navigation.navigate('VictoryScreen', { mission, summary, attempts: newAttempts });
-        }, 2000);
+        }, hasGame ? 3500 : 2000); // wait for animation to play out
       }
     } catch (err) {
       Alert.alert('Hmm, something went wrong', 'Check your internet and try again!');
@@ -48,8 +70,15 @@ export default function MissionScreen({ route, navigation }) {
     }
   }
 
+  const currentStep = animSteps?.[stepIdx] ?? null;
+
   return (
     <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
+      {/* Back button */}
+      <TouchableOpacity style={styles.backBtn} onPress={() => navigation.navigate('MissionSelect')}>
+        <Text style={styles.backBtnText}>← Menu</Text>
+      </TouchableOpacity>
+
       {/* Story Panel */}
       <View style={styles.storyCard}>
         <Text style={styles.missionTitle}>{mission.title}</Text>
@@ -64,6 +93,15 @@ export default function MissionScreen({ route, navigation }) {
       <View style={[styles.badge, styles[`badge_${difficulty}`]]}>
         <Text style={styles.badgeText}>{difficulty.toUpperCase()}</Text>
       </View>
+
+      {/* ── GAME VIEW (missions with a grid) ── */}
+      {hasGame && (
+        <GameView
+          layout={mission}
+          currentStep={currentStep}
+          stepMessage={currentStep?.message}
+        />
+      )}
 
       {/* Input area */}
       <Text style={styles.inputLabel}>Describe your solution:</Text>
@@ -105,7 +143,7 @@ export default function MissionScreen({ route, navigation }) {
             </View>
           ) : (
             <View style={styles.failBanner}>
-              <Text style={styles.failText}>Not quite... {result.hint}</Text>
+              <Text style={styles.failText}>Not quite… {result.hint}</Text>
             </View>
           )}
           <LogicBlockView
@@ -119,7 +157,7 @@ export default function MissionScreen({ route, navigation }) {
       {/* Attempt counter */}
       {attempts > 0 && (
         <Text style={styles.attemptText}>
-          Attempts: {attempts} {attempts > 2 ? '— keep going, you\'ve got this!' : ''}
+          Attempts: {attempts}{attempts > 2 ? ' — keep going, you\'ve got this!' : ''}
         </Text>
       )}
     </ScrollView>
@@ -128,6 +166,17 @@ export default function MissionScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8F9FA', padding: 16 },
+  backBtn: {
+    alignSelf: 'flex-start',
+    marginBottom: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#DDE1E7',
+  },
+  backBtnText: { color: '#5B4FE9', fontWeight: '700', fontSize: 14 },
   storyCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
@@ -169,7 +218,7 @@ const styles = StyleSheet.create({
     padding: 14,
     fontSize: 15,
     color: '#333',
-    minHeight: 100,
+    minHeight: 80,
     textAlignVertical: 'top',
     marginBottom: 12,
   },

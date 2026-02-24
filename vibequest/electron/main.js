@@ -17,10 +17,12 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      webSecurity: false,  // Allow direct API calls from renderer (desktop-only app)
     },
   });
 
   win.loadURL(REACT_NATIVE_PORT);
+  win.webContents.openDevTools();
 
   // Pass API key from environment to renderer safely
   win.webContents.on('did-finish-load', () => {

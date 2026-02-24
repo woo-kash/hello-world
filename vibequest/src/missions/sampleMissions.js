@@ -8,22 +8,24 @@ export const STARTER_MISSIONS = [
     id: 'mission-1',
     difficulty: 'easy',
     title: 'Help the Robot Escape!',
-    story: 'ROVI the robot is stuck in a maze. The exit is to the right, but there\'s a wall blocking the path ahead!',
-    challenge: 'Tell ROVI what to do: describe how it should move to reach the exit.',
+    story: 'ROVI the robot is stuck in a maze. There\'s a wall blocking the path ahead, but the exit door is waiting on the other side!',
+    challenge: 'Tell ROVI what to do: describe how it should check for walls and move to reach the exit door.',
     concept: 'conditionals',
     winCondition: 'robot reaches exit without hitting walls',
-    starterHint: 'Think about what ROVI should check before moving...',
-    maze: {
-      grid: [
-        [0, 0, 0, 0, 0],
-        [0, 1, 1, 0, 0],
-        [0, 1, 0, 0, 2], // 2 = exit
-        [0, 1, 1, 1, 0],
-        [0, 0, 0, 0, 0],
-      ],
-      robotStart: { x: 0, y: 2 },
-      exit: { x: 4, y: 2 },
-    },
+    starterHint: 'If there\'s a wall ahead, turn right. Then move forward. Then turn left. Then move forward two times!',
+    // Grid: 0=floor, 1=wall, 2=exit door
+    // ROVI at (1,1) facing right. Wall at (2,1). Go around to (3,2).
+    grid: [
+      [0, 0, 0, 0, 0],
+      [0, 0, 1, 0, 0],
+      [0, 0, 0, 2, 0],
+      [0, 0, 0, 0, 0],
+    ],
+    cols: 5,
+    rows: 4,
+    robotStart: { x: 1, y: 1 },
+    robotDir: 'right',
+    goal: [3, 2],
   },
   {
     id: 'mission-2',

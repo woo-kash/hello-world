@@ -6,13 +6,19 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 
+// Strip markdown code fences the model sometimes adds despite instructions
+function parseJSON(raw) {
+  const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  return JSON.parse(cleaned);
+}
+
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
   dangerouslyAllowBrowser: true,
 });
 
 const DIFFICULTY_PROMPTS = {
-  easy: 'Use very simple language. Max 3 logic blocks. Explain like talking to a 6-year-old.',
+  easy: 'Use very simple language. Max 5 logic blocks. Explain like talking to a 6-year-old. Be VERY generous with success — if the child describes the right concept (checking for a wall, turning, moving forward), mark success: true even if the wording is imprecise or some steps are implied. Encourage effort!',
   medium: 'Use moderate complexity. Up to 6 logic blocks. Explain like talking to a 10-year-old.',
   hard: 'Can use loops, nested conditions, functions. Explain like talking to a 14-year-old.',
 };
@@ -85,7 +91,7 @@ Return valid JSON only:
     system: systemPrompt,
   });
 
-  return JSON.parse(message.content[0].text);
+  return parseJSON(message.content[0].text);
 }
 
 /**
@@ -108,5 +114,5 @@ badge is one of: "Loop Legend", "Condition Crusher", "Function Finder", "Logic M
     }],
   });
 
-  return JSON.parse(message.content[0].text);
+  return parseJSON(message.content[0].text);
 }
