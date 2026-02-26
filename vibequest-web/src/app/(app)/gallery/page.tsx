@@ -34,20 +34,20 @@ export default function GalleryPage() {
   }, [filterTier]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-blue-950 to-indigo-950">
-      <header className="border-b border-white/10 px-6 py-4 flex items-center justify-between">
+    <div className="min-h-screen" style={{ background: 'var(--vq-bg)' }}>
+      <header className="border-b px-6 py-4 flex items-center justify-between" style={{ borderColor: 'var(--vq-border)', background: 'var(--vq-surface)' }}>
         <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="text-purple-300 hover:text-white transition-colors text-sm">← Dashboard</Link>
-          <span className="text-white/30">|</span>
+          <Link href="/dashboard" className="text-sm transition-colors hover:text-[var(--vq-text)]" style={{ color: 'var(--vq-primary)' }}>← Dashboard</Link>
+          <span style={{ color: 'var(--vq-border)' }}>|</span>
           <span className="text-2xl">🖼️</span>
-          <span className="text-white font-bold text-xl">Creation Gallery</span>
+          <span className="font-bold text-xl" style={{ color: 'var(--vq-text)' }}>Creation Gallery</span>
         </div>
       </header>
 
       <div className="max-w-6xl mx-auto p-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-white mb-2">What kids have built</h1>
-          <p className="text-purple-300">Every creation here was built by a real kid, using AI as their tool.</p>
+          <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--vq-text)' }}>What kids have built</h1>
+          <p style={{ color: 'var(--vq-muted)' }}>Every creation here was built by a real kid, using AI as their tool.</p>
         </div>
 
         {/* Filter */}
@@ -56,7 +56,12 @@ export default function GalleryPage() {
             <button
               key={t}
               onClick={() => { setFilterTier(t); setLoading(true); }}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filterTier === t ? 'bg-purple-500 text-white' : 'bg-white/10 text-white/60 hover:text-white'}`}
+              className="px-4 py-2 rounded-full text-sm font-medium transition-colors"
+              style={{
+                background: filterTier === t ? 'var(--vq-primary)' : 'var(--vq-card)',
+                color: filterTier === t ? 'white' : 'var(--vq-muted)',
+                border: '1px solid var(--vq-border)',
+              }}
             >
               {t === 'all' ? 'All Tiers' : TIER_LABELS[parseInt(t)]}
             </button>
@@ -64,13 +69,13 @@ export default function GalleryPage() {
         </div>
 
         {loading ? (
-          <div className="text-white text-center animate-pulse py-20">Loading creations... 🎨</div>
+          <div className="text-center animate-pulse py-20" style={{ color: 'var(--vq-muted)' }}>Loading creations... 🎨</div>
         ) : creations.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">🎨</div>
-            <p className="text-white text-xl font-bold mb-2">No creations yet!</p>
-            <p className="text-purple-300 mb-6">Complete a mission and hit "Ship It" to be the first.</p>
-            <Link href="/dashboard" className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
+            <p className="text-xl font-bold mb-2" style={{ color: 'var(--vq-text)' }}>No creations yet!</p>
+            <p className="mb-6" style={{ color: 'var(--vq-muted)' }}>Complete a mission and hit &quot;Ship It&quot; to be the first.</p>
+            <Link href="/dashboard" className="text-white px-6 py-3 rounded-xl font-semibold transition-colors" style={{ background: 'var(--vq-primary)' }}>
               Start building →
             </Link>
           </div>
@@ -82,30 +87,31 @@ export default function GalleryPage() {
                 <Link
                   key={c.id}
                   href={`/gallery/${c.id}`}
-                  className="group bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-purple-400/50 transition-all hover:scale-[1.02]"
+                  className="group rounded-2xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-md"
+                  style={{ background: 'var(--vq-card)', border: '1px solid var(--vq-border)' }}
                 >
                   {/* Mini preview */}
-                  <div className="h-40 bg-gray-900 overflow-hidden relative">
+                  <div className="h-40 overflow-hidden relative" style={{ background: 'var(--vq-bg)' }}>
                     <iframe
                       srcDoc={c.code}
                       sandbox="allow-scripts"
                       className="w-full h-full border-none scale-50 origin-top-left pointer-events-none"
                       style={{ width: '200%', height: '200%' }}
                     />
-                    <div className="absolute inset-0 group-hover:bg-purple-500/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                      <span className="bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-semibold">▶ Play</span>
+                    <div className="absolute inset-0 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100" style={{ background: 'rgba(31,179,143,0.12)' }}>
+                      <span className="text-white px-4 py-2 rounded-full text-sm font-semibold" style={{ background: 'var(--vq-primary)' }}>▶ Play</span>
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="text-white font-bold mb-2 truncate">{c.title}</h3>
+                    <h3 className="font-bold mb-2 truncate" style={{ color: 'var(--vq-text)' }}>{c.title}</h3>
                     <div className="flex items-center gap-2 flex-wrap">
                       {c.tier && (
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${TIER_COLORS[c.tier] ?? 'bg-white/10 text-white/60'}`}>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${TIER_COLORS[c.tier] ?? ''}`}>
                           {TIER_LABELS[c.tier] ?? `Tier ${c.tier}`}
                         </span>
                       )}
                       {skill && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300">
+                        <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(124,77,255,0.12)', color: 'var(--vq-purple)' }}>
                           {skill.icon} {skill.name}
                         </span>
                       )}

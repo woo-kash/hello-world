@@ -491,6 +491,101 @@ Return valid JSON:
 }
 
 /**
+ * Music Builder: iterate on a song's SETTINGS based on the kid's description.
+ * Returns updated SETTINGS JSON + explanation (much faster than full HTML regeneration).
+ */
+export interface MusicSettings {
+  title?: string;
+  bpm?: number;
+  instruments?: string[];
+  melody?: number[];
+  bass?: number[];
+  drums?: number[];
+  arp?: number[];
+}
+
+export interface MusicIterateResult {
+  settings: MusicSettings;
+  explanation: string;
+}
+
+export async function musicIterate(
+  currentSettings: MusicSettings,
+  kidDescription: string,
+  tier: Tier = 1
+): Promise<MusicIterateResult> {
+  const systemPrompt = `You are VibeQuest's Music Builder AI. A kid is describing music they want to create.
+
+Your job: take their description and return updated music SETTINGS as JSON.
+
+${TIER_PROMPTS[tier]}
+
+MUSIC SETTINGS schema:
+- "title": string — song title
+- "bpm": number 60-180 — tempo
+- "instruments": array of active instruments, subset of ["drums","synth","bass","arp"]
+- "melody": array of 16 MIDI note numbers (0 = silence, 60=C4, 62=D4, 64=E4, 65=F4, 67=G4, 69=A4, 71=B4, 72=C5)
+- "bass": array of 16 MIDI note numbers (0 = silence, bass range 36-48)
+- "drums": array of 16 values (1=hit, 0=silence)
+- "arp": array of 16 values (1=on, 0=off)
+
+Guidelines:
+- If the kid says "space adventure": use minor pentatonic notes, moderate BPM (~100-120), include arps
+- If they say "funky": syncopated drums (hits on 2,6,10,14), heavy bass, high BPM (130+)
+- If they say "faster": increase BPM by 20-40
+- If they say "slower": decrease BPM by 20-30
+- If they say "add drums" / "more bass": include that in instruments array
+- Always return all 16 values in each array
+- Only modify what the description asks for; keep everything else from currentSettings
+
+Return valid JSON only:
+{
+  "settings": { /* only the fields to change */ },
+  "explanation": "1-2 kid-friendly sentences about what you changed"
+}`;
+
+  const msg = await getClient().messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 1024,
+    system: systemPrompt,
+    messages: [{
+      role: 'user',
+      content: `Current settings: ${JSON.stringify(currentSettings)}\n\nKid's description: "${kidDescription}"\n\nUpdate the music!`,
+    }],
+  });
+
+  return parseJSON((msg.content[0] as { text: string }).text);
+}
+
+/**
+ * Avatar Generator: produces a simple SVG avatar from a text description.
+ */
+export async function generateAvatar(description: string): Promise<{ svg: string }> {
+  const systemPrompt = `You are an SVG avatar generator for a kids' coding app.
+
+Create a simple, friendly, colourful SVG avatar based on the description.
+- 120×120px viewBox
+- Use simple geometric shapes (circles, rects, paths) — no complexity
+- Friendly face if depicting a character
+- Vivid, cheerful colours that work on a light background
+- No external references, fonts, or images — pure SVG shapes only
+- Return ONLY the complete <svg>...</svg> element, nothing else`;
+
+  const msg = await getClient().messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 1024,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: `Create an avatar for: "${description}"` }],
+  });
+
+  const raw = (msg.content[0] as { text: string }).text.trim();
+  // Extract just the SVG element
+  const match = raw.match(/<svg[\s\S]*<\/svg>/i);
+  const svg = match ? match[0] : raw;
+  return { svg };
+}
+
+/**
  * AI Judge: evaluate the kid's reasoning for picking a variant.
  */
 export interface JudgeEvalResult {

@@ -7,7 +7,7 @@
 
 import type { SkillId } from './skills';
 
-export type MissionType = 'grid' | 'stars' | 'logic' | 'code' | 'app' | 'builder' | 'game-builder' | 'debug' | 'remix' | 'spec' | 'judge';
+export type MissionType = 'grid' | 'stars' | 'logic' | 'code' | 'app' | 'builder' | 'game-builder' | 'debug' | 'remix' | 'spec' | 'judge' | 'music';
 
 export interface SceneConfig {
   sceneId: string;
@@ -1001,12 +1001,220 @@ function addMsg(text, type) {
   },
 ];
 
+// ─── New Game + Music Missions ──────────────────────────────────────────────
+
+const NEW_GAME_MISSIONS: Mission[] = [
+  // Flappy Runner — Tier 1
+  {
+    id: 'tier1-game-flappy',
+    tier: 1,
+    difficulty: 'easy',
+    title: '🐦 Flappy Sky Quest',
+    story: 'A little bird named Pip needs to fly through a magical sky full of floating pillars! Pip can only move up or down — and needs YOUR help to dodge every obstacle.',
+    challenge: 'Customise Pip\'s colour, the sky, and the pipes, then describe the world Pip flies through!',
+    concept: 'Game customisation — colours, characters, difficulty',
+    winCondition: 'Game built and customised with at least one AI iteration',
+    starterHint: 'First pick a game type, then choose Pip\'s look, and describe the world!',
+    type: 'game-builder',
+    gameTemplateId: 'flappy',
+    primarySkill: 'rapid-prototyping',
+    xp: 60,
+    free: true,
+  },
+  // Brick Breaker — Tier 2
+  {
+    id: 'tier2-game-brick',
+    tier: 2,
+    difficulty: 'medium',
+    title: '🧱 Brick Blaster Studio',
+    story: 'The Brick Dimension is overrun with magical bricks! A lone paddle-hero must bounce an energy ball to shatter them all. You\'re the game designer — make it epic.',
+    challenge: 'Build a Brick Breaker game. Customise the paddle, ball, brick emojis, number of rows, and difficulty. Use vibe coding to describe the theme.',
+    concept: 'Game design — difficulty tuning, visual customisation, iteration',
+    winCondition: 'Brick Breaker game built with at least 2 AI iterations',
+    starterHint: 'Pick Brick Breaker as your template, then describe the colour scheme and brick theme.',
+    type: 'game-builder',
+    gameTemplateId: 'brick-breaker',
+    primarySkill: 'rapid-prototyping',
+    secondarySkill: 'remix-and-extend',
+    xp: 100,
+  },
+  // Flappy Advanced — Tier 3
+  {
+    id: 'tier3-game-flappy',
+    tier: 3,
+    difficulty: 'hard',
+    title: '🐦 Flappy Advanced — Physics Remix',
+    story: 'You\'re a senior game developer at VibeSoft. The Flappy Runner engine needs a full physics and difficulty overhaul. Gravity curves, pipe patterns, speed ramps — all configurable by prompt.',
+    challenge: 'Use detailed prompt engineering to modify the Flappy Runner game: tune gravity curves, pipe gap algorithms, speed scaling, and add a high-score system. Aim for 3+ iterations.',
+    concept: 'Prompt engineering for game physics — gravity, speed scaling, procedural generation',
+    winCondition: 'Flappy game with custom physics, difficulty curve, and high-score display',
+    starterHint: 'Start with a clear spec: "Modify gravity to 0.6, reduce gap size as score increases, add high-score storage in localStorage."',
+    type: 'game-builder',
+    gameTemplateId: 'flappy',
+    primarySkill: 'precision-of-language',
+    secondarySkill: 'rapid-prototyping',
+    xp: 180,
+  },
+];
+
+const MUSIC_MISSIONS: Mission[] = [
+  // Tier 1 Music
+  {
+    id: 'tier1-music-1',
+    tier: 1,
+    difficulty: 'easy',
+    title: '🎵 Space Jam Machine',
+    story: 'Zara the music robot is building a space soundtrack for the Galactic Parade! She needs YOUR help to describe the perfect space tune — full of beeps, blips, and cosmic vibes.',
+    challenge: 'Use your words (or your voice!) to tell the AI what your space jam should sound like. Try to change the tempo, add drums, or describe a mood!',
+    concept: 'Music creation — describing sound with language, iteration',
+    winCondition: 'Music piece created with at least 1 AI iteration',
+    starterHint: 'Try saying: "Make it sound like floating through space — slow, dreamy, with sparkly arpeggios!"',
+    type: 'music',
+    primarySkill: 'precision-of-language',
+    xp: 60,
+    free: true,
+  },
+  // Tier 2 Music
+  {
+    id: 'tier2-music-1',
+    tier: 2,
+    difficulty: 'medium',
+    title: '🎵 Tune Builder Workshop',
+    story: 'You\'ve been hired as a junior composer at Beat Lab Studios. Your first assignment: build a full track from scratch — melody, bass, drums, and arpeggios — using nothing but your description skills.',
+    challenge: 'Compose a song by describing the melody, bass, and rhythm. Use musical words like tempo, key, syncopated, progression. Aim for 2+ iterations to refine your tune.',
+    concept: 'Music composition — melody, rhythm, instrumentation, iteration',
+    winCondition: 'Full track with melody, bass, drums, and at least 2 iterations',
+    starterHint: 'Start with a vibe: "A funky beat at 130 BPM with a punchy bass on every 1 and 3, synth melody in C major."',
+    type: 'music',
+    primarySkill: 'precision-of-language',
+    secondarySkill: 'systems-thinking',
+    xp: 100,
+  },
+  // Tier 3 Music
+  {
+    id: 'tier3-music-1',
+    tier: 3,
+    difficulty: 'hard',
+    title: '🎵 Beat Drop — Spec Edition',
+    story: 'You\'re a music AI prompt engineer at SoundForge AI. Clients send you precise musical specifications and you turn them into reality using nothing but language. Today\'s brief: create a complete track spec and iterate until it\'s perfect.',
+    challenge: 'Write a detailed musical specification (key, time signature, BPM, instruments, mood, structure) and use 3+ AI iterations to achieve your vision. Show your prompt engineering skills!',
+    concept: 'Prompt engineering for creative AI — music specification, iteration, feedback loops',
+    winCondition: 'Music piece created from a detailed spec with 3+ iterations showing clear improvement',
+    starterHint: 'Write a spec first: "Key: A minor | BPM: 140 | 4/4 time | Instruments: drums (trap pattern), bass (root notes on 1, passing on 3), synth lead (minor pentatonic, call-and-response phrases), arp (16th notes, upper octave)."',
+    type: 'music',
+    primarySkill: 'specification-writing',
+    secondarySkill: 'precision-of-language',
+    xp: 200,
+  },
+];
+
+// ─── Literature Missions ─────────────────────────────────────────────────────
+
+const LITERATURE_MISSIONS: Mission[] = [
+  {
+    id: 'tier1-lit-alice',
+    tier: 1,
+    difficulty: 'easy',
+    title: "Alice's Maze Machine",
+    story: "Alice has tumbled into Wonderland and the path keeps changing! She needs a rulebook so she always knows which way to go.",
+    challenge: "Write rules for Alice: if the door is red she goes left, if it's blue she goes right, if it's striped she jumps over it.",
+    concept: 'conditionals',
+    winCondition: 'All three door colours handled with correct directions',
+    starterHint: 'Think of each colour as a question: "Is it red? Then..."',
+    free: true,
+    type: 'grid',
+    theme: 'forest',
+    primarySkill: 'decomposition',
+    xp: 75,
+  },
+  {
+    id: 'tier1-lit-beanstalk',
+    tier: 1,
+    difficulty: 'easy',
+    title: "Jack's Beanstalk Climber",
+    story: "Jack needs to climb the magic beanstalk to reach the giant's castle — but the beanstalk keeps growing! He needs a repeating plan.",
+    challenge: "Give Jack instructions to climb the beanstalk step by step. He needs to repeat the same moves over and over until he reaches the top.",
+    concept: 'loops',
+    winCondition: 'Jack reaches the top using a repeating pattern of instructions',
+    starterHint: 'What does Jack do once? Now how do you make him do it 10 times?',
+    free: true,
+    type: 'stars',
+    primarySkill: 'pattern-recognition',
+    xp: 75,
+  },
+  {
+    id: 'tier2-lit-sherlock',
+    tier: 2,
+    difficulty: 'medium',
+    title: "The Missing Crown Jewels",
+    story: "Sherlock Holmes has built a clue-matching program to catch the thief — but something is wrong. The wrong suspects keep being flagged!",
+    challenge: "Sherlock's clue-matcher has a bug. Find it, explain what went wrong, and fix it so the right culprit is identified.",
+    concept: 'debugging',
+    winCondition: 'Bug identified, explained clearly, and program produces the correct output',
+    starterHint: 'Read the logic carefully. Does the condition check the right thing? Are the comparisons exact?',
+    type: 'debug',
+    primarySkill: 'debugging-with-ai',
+    secondarySkill: 'precision-of-language',
+    xp: 125,
+  },
+  {
+    id: 'tier2-lit-romeo',
+    tier: 2,
+    difficulty: 'medium',
+    title: "Romeo & Juliet's Secret Messenger",
+    story: "Romeo and Juliet need to send secret messages past the Capulet guards. They need a message encoder that scrambles letters so nobody else can read them!",
+    challenge: "Build a secret message encoder: take any text, shift each letter by 3 positions in the alphabet (Caesar cipher), and decode it back.",
+    concept: 'string manipulation',
+    winCondition: 'Encoder correctly shifts letters; decoder reverses it; example message works end-to-end',
+    starterHint: 'Think about the alphabet as a number line. "A" is 0, "B" is 1... shift by 3 means add 3!',
+    type: 'code',
+    starterCode: "// Encode: shift each letter forward by 3\nfunction encode(message) {\n  // Your code here\n}\n\n// Test it:\nconsole.log(encode('HELLO')); // Should print 'KHOOR'",
+    primarySkill: 'decomposition',
+    secondarySkill: 'pattern-recognition',
+    xp: 125,
+  },
+  {
+    id: 'tier3-lit-frankenstein',
+    tier: 3,
+    difficulty: 'hard',
+    title: "Frankenstein's Lab",
+    story: "Dr Frankenstein wants to build a creature-creator app — but he needs a perfect specification before he can start. Without a good spec, the creature might turn out... wrong.",
+    challenge: "Write a full product specification for a 'creature creator' web app. Define the features, user flows, edge cases, and what the AI needs to do at each step.",
+    concept: 'specification writing',
+    winCondition: 'Specification covers all core features, user flows, edge cases, and AI interaction points clearly enough to hand to a developer',
+    starterHint: 'Start with: what does the user see first? What can they click? What does each action do? What should the AI help with?',
+    type: 'spec',
+    primarySkill: 'specification-writing',
+    secondarySkill: 'giving-feedback',
+    xp: 175,
+  },
+  {
+    id: 'tier3-lit-1984',
+    tier: 3,
+    difficulty: 'hard',
+    title: 'Room 101 — Doublethink Detector',
+    story: "In George Orwell's 1984, the Party uses 'doublethink' — holding two contradictory beliefs at the same time. Winston wants to build a tool to expose it.",
+    challenge: "Build a 'doublethink detector' web app that takes any piece of text, sends it to the Claude API, and highlights any contradictions, logical inconsistencies, or double-speak it finds.",
+    concept: 'Claude API + critical thinking',
+    winCondition: 'App takes text input, calls Claude API correctly, displays contradictions in a clear UI with explanations',
+    starterHint: 'Prompt Claude: "Analyse this text for contradictions, double-speak, or logical inconsistencies. For each one found, quote the conflicting parts and explain why they contradict."',
+    type: 'app',
+    appDescription: 'A web app with a text input box and a "Detect Doublethink" button. On submit it calls the Claude API and shows highlighted contradictions with explanations below.',
+    primarySkill: 'ai-literacy',
+    secondarySkill: 'precision-of-language',
+    xp: 200,
+  },
+];
+
 // ─── Exports ────────────────────────────────────────────────────────────────
 
 export const ALL_MISSIONS: Mission[] = [
   ...TIER1_MISSIONS,
   ...TIER2_MISSIONS,
   ...TIER3_MISSIONS,
+  ...NEW_GAME_MISSIONS,
+  ...MUSIC_MISSIONS,
+  ...LITERATURE_MISSIONS,
 ];
 
 export function getMissionsByTier(tier: 1 | 2 | 3): Mission[] {

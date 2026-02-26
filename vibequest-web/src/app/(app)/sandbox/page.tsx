@@ -84,19 +84,19 @@ export default function SandboxPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-blue-950 to-indigo-950">
-      <header className="border-b border-white/10 px-6 py-4 flex items-center gap-3">
-        <Link href="/dashboard" className="text-purple-300 hover:text-white transition-colors text-sm">← Dashboard</Link>
-        <span className="text-white/30">|</span>
+    <div className="min-h-screen" style={{ background: 'var(--vq-bg)' }}>
+      <header className="border-b px-6 py-4 flex items-center gap-3" style={{ borderColor: 'var(--vq-border)', background: 'var(--vq-surface)' }}>
+        <Link href="/dashboard" className="text-sm transition-colors hover:text-[var(--vq-text)]" style={{ color: 'var(--vq-primary)' }}>← Dashboard</Link>
+        <span style={{ color: 'var(--vq-border)' }}>|</span>
         <span className="text-2xl">🎨</span>
-        <span className="text-white font-bold text-xl">Sandbox</span>
+        <span className="font-bold text-xl" style={{ color: 'var(--vq-text)' }}>Sandbox</span>
       </header>
 
       <div className="max-w-3xl mx-auto p-6 text-center">
         <div className="mb-10">
-          <h1 className="text-4xl font-bold text-white mb-3">Build Anything</h1>
-          <p className="text-purple-300 text-lg">No mission. No rules. Pure creation.</p>
-          <p className="text-purple-400 text-sm mt-2">Pick a starting point and let your imagination run wild.</p>
+          <h1 className="text-4xl font-bold mb-3" style={{ color: 'var(--vq-text)' }}>Build Anything</h1>
+          <p className="text-lg" style={{ color: 'var(--vq-muted)' }}>No mission. No rules. Pure creation.</p>
+          <p className="text-sm mt-2" style={{ color: 'var(--vq-muted)' }}>Pick a starting point and let your imagination run wild.</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -104,16 +104,17 @@ export default function SandboxPage() {
             <button
               key={t.id}
               onClick={() => setSelected(t.id)}
-              className="bg-white/5 border border-white/10 hover:border-purple-400/50 hover:bg-white/10 rounded-2xl p-8 text-left transition-all hover:scale-[1.02] group"
+              className="rounded-2xl p-8 text-left transition-all hover:scale-[1.02] group"
+              style={{ background: 'var(--vq-card)', border: '1px solid var(--vq-border)' }}
             >
               <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">{t.emoji}</div>
-              <h3 className="text-white font-bold text-xl mb-2">{t.label}</h3>
-              <p className="text-purple-300 text-sm">{t.description}</p>
+              <h3 className="font-bold text-xl mb-2" style={{ color: 'var(--vq-text)' }}>{t.label}</h3>
+              <p className="text-sm" style={{ color: 'var(--vq-muted)' }}>{t.description}</p>
             </button>
           ))}
         </div>
 
-        <p className="text-purple-500 text-xs mt-8">
+        <p className="text-xs mt-8" style={{ color: 'var(--vq-muted)' }}>
           Your sandbox saves automatically — come back anytime to keep building.
         </p>
       </div>

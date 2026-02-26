@@ -1,13 +1,16 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Nunito } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import './globals.css';
 
 // All pages are dynamic — Clerk auth requires runtime env vars
 export const dynamic = 'force-dynamic';
 
-const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
-const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
+const nunito = Nunito({
+  subsets: ['latin'],
+  variable: '--font-nunito',
+  weight: ['400', '600', '700', '800', '900'],
+});
 
 export const metadata: Metadata = {
   title: 'VibeQuest — Learn to Code with AI',
@@ -23,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <body className={`${nunito.variable} antialiased`}>
           {children}
         </body>
       </html>

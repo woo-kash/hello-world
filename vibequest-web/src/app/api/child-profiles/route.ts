@@ -86,3 +86,48 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json(child);
 }
+
+export async function PATCH(req: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { id, name, age, avatar } = await req.json();
+  if (!id || !name || !age) return NextResponse.json({ error: 'id, name and age required' }, { status: 400 });
+
+  const tier = age <= 8 ? 1 : age <= 12 ? 2 : 3;
+
+  if (!SUPABASE_CONFIGURED) {
+    const children = demoChildren.get(userId) ?? [];
+    const idx = children.findIndex((c: any) => c.id === id);
+    if (idx === -1) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    children[idx] = { ...children[idx], name, age, tier, ...(avatar !== undefined ? { avatar } : {}) };
+    demoChildren.set(userId, children);
+    return NextResponse.json(children[idx]);
+  }
+
+  const { createServiceClient } = await import('@/lib/supabase');
+  const db = createServiceClient();
+
+  const { data: profile } = await db
+    .from('profiles')
+    .select('id')
+    .eq('clerk_user_id', userId)
+    .single();
+
+  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+
+  const updatePayload: Record<string, unknown> = { name, age, tier };
+  if (avatar !== undefined) updatePayload.avatar = avatar;
+
+  const { data: child, error } = await db
+    .from('child_profiles')
+    .update(updatePayload)
+    .eq('id', id)
+    .eq('parent_id', profile.id)
+    .select()
+    .single();
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json(child);
+}

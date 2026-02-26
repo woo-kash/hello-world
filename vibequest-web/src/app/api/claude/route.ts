@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   translateToCode, generateMission, generateLessonSummary, builderIterate, gameBuilderIterate,
   debugIterate, remixIterate, evaluateSpec, buildFromSpec, generateVariants, evaluateJudgement,
+  musicIterate, generateAvatar,
   Difficulty, Tier
 } from '@/lib/claude';
 
@@ -116,6 +117,18 @@ export async function POST(req: NextRequest) {
     if (action === 'judge_evaluate') {
       const { pickedIndex, correctIndex, kidReasoning, flaws, tier } = body;
       const result = await evaluateJudgement(pickedIndex, correctIndex, kidReasoning, flaws, tier as Tier);
+      return NextResponse.json(result);
+    }
+
+    if (action === 'music_iterate') {
+      const { currentSettings, kidDescription, tier } = body;
+      const result = await musicIterate(currentSettings, kidDescription, tier as Tier);
+      return NextResponse.json(result);
+    }
+
+    if (action === 'generate_avatar') {
+      const { description } = body;
+      const result = await generateAvatar(description);
       return NextResponse.json(result);
     }
 

@@ -1,29 +1,91 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* VibeQuest brand colours — light mint palette */
+  --vq-bg:           #F0FBF7;   /* very light mint cream */
+  --vq-surface:      #FFFFFF;
+  --vq-card:         #FFFFFF;
+  --vq-border:       #C8EDE4;
+  --vq-primary:      #1fb38f;   /* signature sea-green */
+  --vq-primary-dark: #178a6e;
+  --vq-accent-1:     #FF6B6B;   /* coral */
+  --vq-accent-2:     #1fb38f;   /* sea-green */
+  --vq-accent-3:     #FFD166;   /* sunny yellow */
+  --vq-purple:       #7C4DFF;   /* vibrant purple */
+  --vq-text:         #0D3D30;   /* dark green-tinted heading text */
+  --vq-muted:        #4A8070;   /* muted body text */
+
+  --background: var(--vq-bg);
+  --foreground: var(--vq-text);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-nunito), 'Nunito', 'Segoe UI', system-ui, sans-serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-nunito), 'Nunito', 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.6;
 }
+
+/* ─── Floating bubble background (pure CSS) ───────────────────────── */
+
+.vq-stars-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+.vq-stars-bg::before,
+.vq-stars-bg::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 50%;
+}
+
+.vq-stars-bg::before {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(31,179,143,0.06) 0%, transparent 70%);
+  top: 10%;
+  left: 5%;
+  animation: bubble-float-1 18s ease-in-out infinite;
+}
+
+.vq-stars-bg::after {
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(31,179,143,0.05) 0%, transparent 70%);
+  bottom: 20%;
+  right: 10%;
+  animation: bubble-float-2 24s ease-in-out infinite;
+}
+
+@keyframes bubble-float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(40px, -60px) scale(1.1); }
+  66%       { transform: translate(-20px, -30px) scale(0.95); }
+}
+
+@keyframes bubble-float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(-30px, -50px) scale(1.05); }
+  66%       { transform: translate(20px, -20px) scale(0.9); }
+}
+
+/* ─── Mission type left-border colours ───────────────────────────── */
+.mission-border-game    { border-left: 4px solid #F97316; }
+.mission-border-debug   { border-left: 4px solid #EF4444; }
+.mission-border-remix   { border-left: 4px solid #EC4899; }
+.mission-border-spec    { border-left: 4px solid #3B82F6; }
+.mission-border-judge   { border-left: 4px solid #EAB308; }
+.mission-border-music   { border-left: 4px solid #22C55E; }
+.mission-border-default { border-left: 4px solid #A855F7; }
 
 /* ─── VibeQuest Keyframe Animations ──────────────────────────────────── */
 

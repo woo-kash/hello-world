@@ -60,24 +60,24 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-blue-950 to-indigo-950">
-      <header className="border-b border-white/10 px-6 py-4 flex items-center justify-between">
+    <div className="min-h-screen" style={{ background: 'var(--vq-bg)' }}>
+      <header className="border-b px-6 py-4 flex items-center justify-between" style={{ borderColor: 'var(--vq-border)', background: 'var(--vq-surface)' }}>
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-2xl">🚀</span>
-          <span className="text-white font-bold text-xl">VibeQuest</span>
+          <span className="text-2xl">✨</span>
+          <span className="font-bold text-xl" style={{ color: 'var(--vq-text)' }}>VibeQuest</span>
         </Link>
-        <Link href="/dashboard" className="text-purple-300 hover:text-white text-sm transition-colors">
+        <Link href="/dashboard" className="text-sm transition-colors hover:text-[var(--vq-text)]" style={{ color: 'var(--vq-primary)' }}>
           Dashboard →
         </Link>
       </header>
 
       <div className="max-w-5xl mx-auto px-6 py-16">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">Simple, Transparent Pricing</h1>
-          <p className="text-purple-200 text-lg">
+          <h1 className="text-4xl font-bold mb-4" style={{ color: 'var(--vq-text)' }}>Simple, Transparent Pricing</h1>
+          <p className="text-lg" style={{ color: 'var(--vq-muted)' }}>
             Start free with 3 missions. Unlock everything with a subscription.
           </p>
-          <div className="mt-4 inline-block bg-green-500/20 border border-green-400/30 rounded-full px-4 py-2 text-green-300 text-sm">
+          <div className="mt-4 inline-block rounded-full px-4 py-2 text-sm" style={{ background: 'rgba(31,179,143,0.1)', border: '1px solid rgba(31,179,143,0.25)', color: 'var(--vq-primary)' }}>
             ✅ Free tier includes 3 missions — no credit card required
           </div>
         </div>
@@ -86,31 +86,31 @@ export default function PricingPage() {
           {PLANS.map(plan => (
             <div
               key={plan.key}
-              className={`relative rounded-3xl p-8 ${
-                plan.highlight
-                  ? 'bg-gradient-to-b from-purple-600/40 to-blue-600/40 border-2 border-purple-400/50'
-                  : 'bg-white/5 border border-white/10'
-              }`}
+              className="relative rounded-3xl p-8"
+              style={{
+                background: plan.highlight ? 'rgba(31,179,143,0.06)' : 'var(--vq-card)',
+                border: plan.highlight ? '2px solid var(--vq-primary)' : '1px solid var(--vq-border)',
+              }}
             >
               {plan.highlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-gray-900 text-xs font-bold px-4 py-1 rounded-full">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-bold px-4 py-1 rounded-full text-white" style={{ background: 'var(--vq-primary)' }}>
                   MOST POPULAR
                 </div>
               )}
 
               <div className="mb-6">
-                <h2 className="text-white font-bold text-xl mb-1">{plan.name}</h2>
+                <h2 className="font-bold text-xl mb-1" style={{ color: 'var(--vq-text)' }}>{plan.name}</h2>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">{plan.price}</span>
-                  <span className="text-purple-300">{plan.period}</span>
+                  <span className="text-4xl font-bold" style={{ color: 'var(--vq-text)' }}>{plan.price}</span>
+                  <span style={{ color: 'var(--vq-muted)' }}>{plan.period}</span>
                 </div>
-                <p className="text-purple-300 text-sm mt-1">{plan.description}</p>
+                <p className="text-sm mt-1" style={{ color: 'var(--vq-muted)' }}>{plan.description}</p>
               </div>
 
               <ul className="space-y-3 mb-8">
                 {plan.features.map((f, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-purple-200">
-                    <span className="text-green-400 mt-0.5">✓</span>
+                  <li key={i} className="flex items-start gap-2 text-sm" style={{ color: 'var(--vq-muted)' }}>
+                    <span className="mt-0.5" style={{ color: 'var(--vq-primary)' }}>✓</span>
                     {f}
                   </li>
                 ))}
@@ -119,11 +119,12 @@ export default function PricingPage() {
               <button
                 onClick={() => handleSubscribe(plan.key)}
                 disabled={loading === plan.key}
-                className={`w-full py-3 rounded-xl font-bold transition-colors ${
-                  plan.highlight
-                    ? 'bg-yellow-400 hover:bg-yellow-300 text-gray-900'
-                    : 'bg-white/10 hover:bg-white/20 text-white'
-                } disabled:opacity-50`}
+                className="w-full py-3 rounded-xl font-bold transition-colors disabled:opacity-50"
+                style={{
+                  background: plan.highlight ? 'var(--vq-primary)' : 'var(--vq-bg)',
+                  color: plan.highlight ? 'white' : 'var(--vq-text)',
+                  border: plan.highlight ? 'none' : '1px solid var(--vq-border)',
+                }}
               >
                 {loading === plan.key ? 'Redirecting...' : plan.cta}
               </button>
@@ -133,7 +134,7 @@ export default function PricingPage() {
 
         {/* FAQ */}
         <div className="mt-16">
-          <h2 className="text-white font-bold text-2xl text-center mb-8">Frequently Asked Questions</h2>
+          <h2 className="font-bold text-2xl text-center mb-8" style={{ color: 'var(--vq-text)' }}>Frequently Asked Questions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
               { q: 'What age is VibeQuest for?', a: 'Ages 6–16, split into three tiers: Explorers (6–8), Adventurers (9–12), and Vibe Coders (13–16). The content and difficulty adapts automatically.' },
@@ -143,9 +144,9 @@ export default function PricingPage() {
               { q: 'Is there a free trial?', a: 'Yes! The first 3 missions in each tier are completely free — no credit card required. You can see exactly what your child will experience before subscribing.' },
               { q: 'How many children can use one account?', a: 'Monthly and Annual plans include 1 child profile. The Family plan includes up to 3 child profiles, each with their own progress and tier.' },
             ].map(({ q, a }) => (
-              <div key={q} className="bg-white/5 rounded-2xl p-6">
-                <p className="text-white font-semibold mb-2">{q}</p>
-                <p className="text-purple-300 text-sm">{a}</p>
+              <div key={q} className="rounded-2xl p-6" style={{ background: 'var(--vq-card)', border: '1px solid var(--vq-border)' }}>
+                <p className="font-semibold mb-2" style={{ color: 'var(--vq-text)' }}>{q}</p>
+                <p className="text-sm" style={{ color: 'var(--vq-muted)' }}>{a}</p>
               </div>
             ))}
           </div>

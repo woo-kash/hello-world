@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <!-- Wave curl body — sea-green -->
+  <path
+    d="M20 85 C20 85 30 40 60 30 C90 20 100 55 80 70 C65 82 55 65 65 55 C75 45 90 48 85 58"
+    stroke="#1fb38f"
+    stroke-width="10"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+  <!-- Comet dot accent — sunny yellow -->
+  <circle cx="88" cy="32" r="9" fill="#FFD166"/>
+  <!-- Comet tail sparkles -->
+  <circle cx="98" cy="22" r="4" fill="#FFD166" opacity="0.6"/>
+  <circle cx="105" cy="15" r="2.5" fill="#FFD166" opacity="0.35"/>
+</svg>

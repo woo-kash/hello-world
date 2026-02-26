@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { SignedIn, SignedOut } from '@clerk/nextjs';
+import Image from 'next/image';
 
 const SKILLS_GRID = [
   { icon: '🧩', name: 'Decomposition', desc: 'Breaking big problems into small pieces', category: 'Thinking' },
@@ -19,16 +20,19 @@ const PARENT_ANXIETIES = [
     fear: '"My kid will be left behind"',
     answer: 'By 12 they\'re building apps. By 16, they\'re shipping products. VibeQuest kids don\'t just use AI — they direct it.',
     emoji: '📈',
+    accent: '#FF6B6B',
   },
   {
     fear: '"My kid just consumes AI, not creates with it"',
     answer: 'Every mission ends with something they MADE — a game, an app, a tool. The AI is a tool in their hands, not a replacement for their thinking.',
     emoji: '🔨',
+    accent: '#1fb38f',
   },
   {
     fear: '"I can\'t evaluate tech education"',
     answer: 'The skill dashboard shows exactly what they\'re learning, in plain English. No jargon. No guessing.',
     emoji: '📊',
+    accent: '#FFD166',
   },
 ];
 
@@ -75,25 +79,48 @@ const TIERS = [
   },
 ];
 
+const MISSION_TYPES = [
+  { icon: '🎮', label: 'Game Builder', color: '#F97316', desc: 'Design and build playable games' },
+  { icon: '🐛', label: 'Debug It', color: '#EF4444', desc: 'Find and squash real bugs' },
+  { icon: '🎨', label: 'Remix Studio', color: '#EC4899', desc: 'Transform existing apps' },
+  { icon: '📋', label: 'Spec Writer', color: '#3B82F6', desc: 'Describe before you build' },
+  { icon: '🎵', label: 'Music Builder', color: '#22C55E', desc: 'Compose beats with AI' },
+];
+
+const CATEGORY_COLORS: Record<string, string> = {
+  Thinking: '#7C4DFF',
+  Communication: '#1fb38f',
+  Building: '#FF6B6B',
+  Meta: '#FFD166',
+};
+
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-blue-950 to-indigo-950">
+    <div className="vq-stars-bg min-h-screen" style={{ background: 'var(--vq-bg)', color: 'var(--vq-text)' }}>
       {/* Nav */}
-      <nav className="border-b border-white/10 px-6 py-4 flex items-center justify-between">
+      <nav className="border-b border-[var(--vq-border)] px-6 py-4 flex items-center justify-between" style={{ background: 'var(--vq-surface)' }}>
         <div className="flex items-center gap-2">
-          <span className="text-2xl">🚀</span>
-          <span className="text-white font-bold text-xl">VibeQuest</span>
+          <Image src="/logo.svg" width={32} height={32} alt="" />
+          <span className="font-black text-xl tracking-tight" style={{ color: 'var(--vq-text)' }}>VibeQuest</span>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="/pricing" className="text-purple-300 hover:text-white text-sm transition-colors">Pricing</Link>
+          <Link href="/pricing" className="text-sm transition-colors" style={{ color: 'var(--vq-purple)' }}>Pricing</Link>
           <SignedOut>
-            <Link href="/sign-in" className="text-purple-300 hover:text-white text-sm transition-colors">Sign In</Link>
-            <Link href="/sign-up" className="px-4 py-2 bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold text-sm rounded-xl transition-colors">
+            <Link href="/sign-in" className="text-sm transition-colors" style={{ color: 'var(--vq-purple)' }}>Sign In</Link>
+            <Link
+              href="/sign-up"
+              className="px-4 py-2 text-white font-bold text-sm rounded-xl transition-all hover:scale-105"
+              style={{ background: 'var(--vq-primary)' }}
+            >
               Start Free
             </Link>
           </SignedOut>
           <SignedIn>
-            <Link href="/dashboard" className="px-4 py-2 bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold text-sm rounded-xl transition-colors">
+            <Link
+              href="/dashboard"
+              className="px-4 py-2 text-white font-bold text-sm rounded-xl transition-all hover:scale-105"
+              style={{ background: 'var(--vq-primary)' }}
+            >
               Go to Dashboard →
             </Link>
           </SignedIn>
@@ -101,75 +128,115 @@ export default function HomePage() {
       </nav>
 
       {/* Hero */}
-      <section className="max-w-5xl mx-auto px-6 py-20 text-center">
-        <div className="inline-flex items-center gap-2 bg-yellow-400/10 border border-yellow-400/30 rounded-full px-4 py-2 text-yellow-300 text-sm mb-8">
+      <section className="max-w-5xl mx-auto px-6 py-24 text-center relative z-10">
+        <div
+          className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm mb-8 border"
+          style={{ background: 'rgba(31,179,143,0.08)', borderColor: 'var(--vq-border)', color: 'var(--vq-primary)' }}
+        >
           <span>✨</span>
-          <span>Powered by Claude AI · Used by millions of professionals</span>
+          <span>Powered by Claude AI · Built for the AI generation</span>
         </div>
 
-        <h1 className="text-5xl sm:text-6xl font-bold text-white leading-tight mb-6">
+        <h1 className="text-5xl sm:text-7xl font-black leading-tight mb-6 tracking-tight" style={{ color: 'var(--vq-text)' }}>
           Every child will use AI at work.<br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">
+          <span
+            className="text-transparent bg-clip-text"
+            style={{ backgroundImage: 'linear-gradient(to right, var(--vq-primary), var(--vq-purple))' }}
+          >
             Will yours direct it — or be directed by it?
           </span>
         </h1>
 
-        <p className="text-xl text-purple-200 max-w-2xl mx-auto mb-4">
+        <p className="text-xl max-w-2xl mx-auto mb-4" style={{ color: 'var(--vq-muted)' }}>
           VibeQuest teaches the 10 skills that actually matter in the AI era: how to think clearly, communicate precisely, and build with AI. Starting from age 6.
         </p>
-        <p className="text-purple-400 mb-10">No coding experience required — from either of you.</p>
+        <p className="mb-10 text-sm" style={{ color: 'var(--vq-muted)' }}>No coding experience required — from either of you.</p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
           <Link
             href="/sign-up"
-            className="px-8 py-4 bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold text-xl rounded-2xl transition-colors inline-flex items-center gap-2"
+            className="px-8 py-5 text-white font-black text-xl rounded-2xl transition-all hover:scale-105 inline-flex items-center gap-2 shadow-lg"
+            style={{ background: 'var(--vq-primary)', boxShadow: '0 0 30px rgba(31,179,143,0.25)' }}
           >
-            Start Free — 3 Missions Included 🚀
+            Start Free — 3 Missions Included ✨
           </Link>
           <Link
             href="/pricing"
-            className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-semibold text-xl rounded-2xl transition-colors"
+            className="px-8 py-5 font-bold text-xl rounded-2xl transition-all border"
+            style={{ color: 'var(--vq-text)', borderColor: 'var(--vq-border)', background: 'var(--vq-surface)' }}
           >
             See Pricing →
           </Link>
         </div>
-        <p className="text-purple-400 text-sm">No credit card required · Cancel anytime</p>
+        <p className="text-sm" style={{ color: 'var(--vq-muted)' }}>No credit card required · Cancel anytime</p>
+      </section>
+
+      {/* Mission Types */}
+      <section className="max-w-5xl mx-auto px-6 pb-16 relative z-10">
+        <h2 className="text-2xl font-black text-center mb-3" style={{ color: 'var(--vq-text)' }}>5 ways to learn</h2>
+        <p className="text-center mb-8 text-sm" style={{ color: 'var(--vq-muted)' }}>Every mission type builds a different superpower</p>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          {MISSION_TYPES.map(mt => (
+            <div
+              key={mt.label}
+              className="rounded-3xl p-4 text-center hover:scale-105 transition-all"
+              style={{ background: 'var(--vq-card)', border: '1px solid var(--vq-border)', borderLeft: `4px solid ${mt.color}` }}
+            >
+              <div className="text-3xl mb-2">{mt.icon}</div>
+              <div className="font-bold text-sm mb-1" style={{ color: 'var(--vq-text)' }}>{mt.label}</div>
+              <div className="text-xs" style={{ color: 'var(--vq-muted)' }}>{mt.desc}</div>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* The 10 Skills */}
-      <section className="max-w-5xl mx-auto px-6 pb-20">
-        <h2 className="text-3xl font-bold text-white text-center mb-3">The 10 skills that matter</h2>
-        <p className="text-purple-300 text-center mb-12">Not syntax. Not memorisation. The skills that make someone great at working with AI.</p>
+      <section className="max-w-5xl mx-auto px-6 pb-20 relative z-10">
+        <h2 className="text-3xl font-black text-center mb-3" style={{ color: 'var(--vq-text)' }}>The 10 skills that matter</h2>
+        <p className="text-center mb-12 text-sm" style={{ color: 'var(--vq-muted)' }}>Not syntax. Not memorisation. The skills that make someone great at working with AI.</p>
 
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {SKILLS_GRID.map(s => (
-            <div key={s.name} className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center hover:border-purple-400/30 transition-colors">
+            <div
+              key={s.name}
+              className="rounded-3xl p-4 text-center hover:scale-105 transition-all"
+              style={{ background: 'var(--vq-card)', border: '1px solid var(--vq-border)' }}
+            >
               <div className="text-3xl mb-2">{s.icon}</div>
-              <div className="text-white font-semibold text-sm mb-1">{s.name}</div>
-              <div className="text-purple-400 text-xs">{s.desc}</div>
-              <div className="mt-2 text-xs text-purple-600">{s.category}</div>
+              <div className="font-bold text-sm mb-1" style={{ color: 'var(--vq-text)' }}>{s.name}</div>
+              <div className="text-xs mb-2" style={{ color: 'var(--vq-muted)' }}>{s.desc}</div>
+              <div
+                className="text-xs font-bold px-2 py-0.5 rounded-full inline-block"
+                style={{ background: `${CATEGORY_COLORS[s.category]}18`, color: CATEGORY_COLORS[s.category] }}
+              >
+                {s.category}
+              </div>
             </div>
           ))}
         </div>
       </section>
 
       {/* What kids build */}
-      <section className="bg-white/5 border-y border-white/10 py-20">
+      <section className="border-y border-[var(--vq-border)] py-20 relative z-10" style={{ background: 'rgba(31,179,143,0.03)' }}>
         <div className="max-w-5xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-white text-center mb-3">What kids actually build</h2>
-          <p className="text-purple-300 text-center mb-12">Every mission ends with something real. Not a worksheet — something they made.</p>
+          <h2 className="text-3xl font-black text-center mb-3" style={{ color: 'var(--vq-text)' }}>What kids actually build</h2>
+          <p className="text-center mb-12 text-sm" style={{ color: 'var(--vq-muted)' }}>Every mission ends with something real. Not a worksheet — something they made.</p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {TIERS.map(tier => (
-              <div key={tier.name} className="bg-white/5 border border-white/10 rounded-3xl p-8">
-                <div className={`inline-flex items-center gap-2 text-sm font-bold px-3 py-1 rounded-full bg-gradient-to-r ${tier.color} text-white mb-4`}>
+              <div
+                key={tier.name}
+                className="rounded-3xl p-8 hover:scale-105 transition-all"
+                style={{ background: 'var(--vq-card)', border: '1px solid var(--vq-border)' }}
+              >
+                <div className={`inline-flex items-center gap-2 text-sm font-black px-3 py-1.5 rounded-full bg-gradient-to-r ${tier.color} text-white mb-4`}>
                   <span>{tier.emoji}</span>
                   <span>{tier.name} · {tier.age}</span>
                 </div>
                 <ul className="space-y-2">
                   {tier.builds.map(b => (
-                    <li key={b} className="text-purple-200 text-sm flex items-center gap-2">
-                      <span className="text-green-400">✓</span> {b}
+                    <li key={b} className="text-sm flex items-center gap-2" style={{ color: 'var(--vq-muted)' }}>
+                      <span style={{ color: 'var(--vq-primary)' }}>✓</span> {b}
                     </li>
                   ))}
                 </ul>
@@ -180,75 +247,86 @@ export default function HomePage() {
       </section>
 
       {/* Why parents choose VibeQuest */}
-      <section className="max-w-5xl mx-auto px-6 py-20">
-        <h2 className="text-3xl font-bold text-white text-center mb-3">Why parents choose VibeQuest</h2>
-        <p className="text-purple-300 text-center mb-12">We know what keeps parents up at night. Here&apos;s how we address it.</p>
+      <section className="max-w-5xl mx-auto px-6 py-20 relative z-10">
+        <h2 className="text-3xl font-black text-center mb-3" style={{ color: 'var(--vq-text)' }}>Why parents choose VibeQuest</h2>
+        <p className="text-center mb-12 text-sm" style={{ color: 'var(--vq-muted)' }}>We know what keeps parents up at night. Here&apos;s how we address it.</p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {PARENT_ANXIETIES.map(a => (
-            <div key={a.emoji} className="bg-white/5 border border-white/10 rounded-3xl p-8">
+            <div
+              key={a.emoji}
+              className="rounded-3xl p-8"
+              style={{ background: 'var(--vq-card)', border: '1px solid var(--vq-border)', borderLeft: `4px solid ${a.accent}` }}
+            >
               <div className="text-4xl mb-4">{a.emoji}</div>
-              <p className="text-white font-semibold mb-3 italic">{a.fear}</p>
-              <p className="text-purple-200 text-sm leading-relaxed">{a.answer}</p>
+              <p className="font-bold mb-3 italic text-sm" style={{ color: 'var(--vq-text)' }}>{a.fear}</p>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--vq-muted)' }}>{a.answer}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Social proof */}
-      <section className="bg-white/5 border-y border-white/10 py-16">
+      <section className="border-y border-[var(--vq-border)] py-16 relative z-10" style={{ background: 'rgba(31,179,143,0.03)' }}>
         <div className="max-w-4xl mx-auto px-6 text-center">
           <div className="flex justify-center gap-1 mb-4">
-            {[1,2,3,4,5].map(i => <span key={i} className="text-yellow-400 text-xl">⭐</span>)}
+            {[1,2,3,4,5].map(i => <span key={i} className="text-xl" style={{ color: 'var(--vq-accent-3)' }}>⭐</span>)}
           </div>
-          <p className="text-white text-2xl font-semibold mb-4">
+          <p className="text-2xl font-bold mb-4" style={{ color: 'var(--vq-text)' }}>
             &ldquo;My 8-year-old built her first robot game in 20 minutes. She has not stopped talking about coding since.&rdquo;
           </p>
-          <p className="text-purple-400">— Parent of an Explorer-tier student</p>
+          <p style={{ color: 'var(--vq-muted)' }}>— Parent of an Explorer-tier student</p>
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="max-w-3xl mx-auto px-6 py-20">
-        <h2 className="text-3xl font-bold text-white text-center mb-12">Parent FAQ</h2>
-        <div className="space-y-6">
+      <section className="max-w-3xl mx-auto px-6 py-20 relative z-10">
+        <h2 className="text-3xl font-black text-center mb-12" style={{ color: 'var(--vq-text)' }}>Parent FAQ</h2>
+        <div className="space-y-4">
           {FAQ.map(({ q, a }) => (
-            <div key={q} className="bg-white/5 border border-white/10 rounded-2xl p-6">
-              <h3 className="text-white font-bold mb-2">{q}</h3>
-              <p className="text-purple-200 text-sm leading-relaxed">{a}</p>
+            <div
+              key={q}
+              className="rounded-3xl p-6"
+              style={{ background: 'var(--vq-card)', border: '1px solid var(--vq-border)' }}
+            >
+              <h3 className="font-bold mb-2" style={{ color: 'var(--vq-text)' }}>{q}</h3>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--vq-muted)' }}>{a}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* CTA */}
-      <section className="max-w-2xl mx-auto px-6 py-20 text-center">
-        <div className="text-5xl mb-6">🚀</div>
-        <h2 className="text-4xl font-bold text-white mb-4">Your child&apos;s AI superpower starts here</h2>
-        <p className="text-purple-200 mb-8">
+      <section className="max-w-2xl mx-auto px-6 py-20 text-center relative z-10">
+        <div className="text-6xl mb-6">
+          <Image src="/logo.svg" width={72} height={72} alt="" className="mx-auto" />
+        </div>
+        <h2 className="text-4xl font-black mb-4" style={{ color: 'var(--vq-text)' }}>Your child&apos;s AI superpower starts here</h2>
+        <p className="mb-8 text-lg" style={{ color: 'var(--vq-muted)' }}>
           3 free missions. No credit card. Your child could complete their first mission in 5 minutes.
         </p>
         <Link
           href="/sign-up"
-          className="inline-block px-8 py-4 bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold text-xl rounded-2xl transition-colors"
+          className="inline-block px-10 py-5 text-white font-black text-xl rounded-2xl transition-all hover:scale-105 shadow-lg"
+          style={{ background: 'var(--vq-primary)', boxShadow: '0 0 40px rgba(31,179,143,0.25)' }}
         >
           Start Free Today →
         </Link>
-        <p className="text-purple-400 text-sm mt-4">Then from $9.99/month · Cancel anytime</p>
+        <p className="text-sm mt-4" style={{ color: 'var(--vq-muted)' }}>Then from $9.99/month · Cancel anytime</p>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 px-6 py-8 text-center text-purple-400 text-sm">
+      <footer className="border-t border-[var(--vq-border)] px-6 py-8 text-center text-sm relative z-10" style={{ background: 'var(--vq-surface)', color: 'var(--vq-muted)' }}>
         <div className="flex items-center justify-center gap-2 mb-2">
-          <span className="text-xl">🚀</span>
-          <span className="text-white font-bold">VibeQuest</span>
+          <Image src="/logo.svg" width={24} height={24} alt="" />
+          <span className="font-black" style={{ color: 'var(--vq-text)' }}>VibeQuest</span>
         </div>
         <p>© {new Date().getFullYear()} VibeQuest. Teaching kids the 10 skills that matter in the AI era.</p>
         <div className="flex justify-center gap-6 mt-3">
-          <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
-          <Link href="/gallery" className="hover:text-white transition-colors">Gallery</Link>
-          <Link href="/sign-up" className="hover:text-white transition-colors">Sign Up</Link>
-          <Link href="/sign-in" className="hover:text-white transition-colors">Sign In</Link>
+          <Link href="/pricing" className="hover:text-[var(--vq-text)] transition-colors">Pricing</Link>
+          <Link href="/gallery" className="hover:text-[var(--vq-text)] transition-colors">Gallery</Link>
+          <Link href="/sign-up" className="hover:text-[var(--vq-text)] transition-colors">Sign Up</Link>
+          <Link href="/sign-in" className="hover:text-[var(--vq-text)] transition-colors">Sign In</Link>
         </div>
       </footer>
     </div>
