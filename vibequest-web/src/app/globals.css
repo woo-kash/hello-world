@@ -1,0 +1,224 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ─── VibeQuest Keyframe Animations ──────────────────────────────────── */
+
+@keyframes idle-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes robot-walk {
+  0% { transform: translateY(0) scale(1); }
+  25% { transform: translateY(-4px) scale(1.05); }
+  50% { transform: translateY(0) scale(1); }
+  75% { transform: translateY(-2px) scale(1.02); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+@keyframes dust-puff {
+  0% { opacity: 0.8; transform: scale(0.3) translateY(0); }
+  100% { opacity: 0; transform: scale(1.5) translateY(-20px); }
+}
+
+@keyframes firework-burst {
+  0% { opacity: 1; transform: scale(0) translate(0, 0); }
+  50% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1) translate(var(--fw-x, 30px), var(--fw-y, -30px)); }
+}
+
+@keyframes float-up {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-60px) scale(0.5); }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes shooting-star {
+  0% { opacity: 0; transform: translateX(0) translateY(0); }
+  10% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(200px) translateY(100px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.3)); }
+  50% { filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.8)); }
+}
+
+@keyframes draw-line {
+  0% { stroke-dashoffset: 200; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes hop {
+  0% { transform: translateX(0) translateY(0); }
+  30% { transform: translateX(var(--hop-x, 20px)) translateY(-20px); }
+  50% { transform: translateX(var(--hop-x, 20px)) translateY(0); }
+  100% { transform: translateX(var(--hop-x, 20px)) translateY(0); }
+}
+
+@keyframes wiggle-dance {
+  0%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(-12deg); }
+  30% { transform: rotate(12deg); }
+  45% { transform: rotate(-8deg); }
+  60% { transform: rotate(8deg); }
+  75% { transform: rotate(-4deg); }
+  90% { transform: rotate(4deg); }
+}
+
+@keyframes poof {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.8); }
+  100% { opacity: 0; transform: scale(2.5); }
+}
+
+@keyframes fly-in-left {
+  0% { opacity: 0; transform: translateX(-120px) rotate(-20deg); }
+  60% { opacity: 1; transform: translateX(10px) rotate(3deg); }
+  100% { opacity: 1; transform: translateX(0) rotate(0deg); }
+}
+
+@keyframes fly-in-right {
+  0% { opacity: 0; transform: translateX(120px) rotate(20deg); }
+  60% { opacity: 1; transform: translateX(-10px) rotate(-3deg); }
+  100% { opacity: 1; transform: translateX(0) rotate(0deg); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes confetti-fall {
+  0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+  100% { opacity: 0; transform: translateY(120px) rotate(720deg); }
+}
+
+@keyframes scale-in {
+  0% { opacity: 0; transform: scale(0.3); }
+  60% { transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ─── Utility classes ──────────────────────────────────────────────── */
+
+.animate-idle-bob {
+  animation: idle-bob 2s ease-in-out infinite;
+}
+
+.animate-robot-walk {
+  animation: robot-walk 0.35s ease-in-out;
+}
+
+.animate-dust-puff {
+  animation: dust-puff 0.5s ease-out forwards;
+}
+
+.animate-firework-burst {
+  animation: firework-burst 0.8s ease-out forwards;
+}
+
+.animate-float-up {
+  animation: float-up 1.5s ease-out forwards;
+}
+
+.animate-sparkle {
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+.animate-twinkle {
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+.animate-shooting-star {
+  animation: shooting-star 1.5s linear forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-draw-line {
+  animation: draw-line 1.5s ease-out forwards;
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+}
+
+.animate-hop {
+  animation: hop 0.6s ease-in-out forwards;
+}
+
+.animate-wiggle-dance {
+  animation: wiggle-dance 0.8s ease-in-out;
+}
+
+.animate-poof {
+  animation: poof 0.5s ease-out forwards;
+}
+
+.animate-fly-in-left {
+  animation: fly-in-left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-fly-in-right {
+  animation: fly-in-right 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.08) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.animate-confetti-fall {
+  animation: confetti-fall 1.2s ease-in forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease infinite;
+}

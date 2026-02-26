@@ -11,11 +11,14 @@ import {
 import { translateToCode, generateLessonSummary } from '../ai/missionAI';
 import LogicBlockView from '../components/LogicBlockView';
 import GameView from '../components/GameView';
+import StarGameView from '../components/StarGameView';
 import { executeBlocks } from '../utils/gameEngine';
+import { playSuccessSound } from '../utils/sound';
 
 export default function MissionScreen({ route, navigation }) {
   const { mission, difficulty = 'easy' } = route.params;
   const hasGame = Boolean(mission.grid);
+  const hasStars = mission.type === 'stars';
 
   const [userInput, setUserInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -53,9 +56,12 @@ export default function MissionScreen({ route, navigation }) {
         const steps = executeBlocks(aiResult.logicBlocks, mission);
         setAnimSteps(steps);
         setStepIdx(0);
+        // For grid missions, success = robot actually reaches the door in simulation
+        aiResult.success = steps[steps.length - 1]?.atGoal ?? false;
       }
 
       if (aiResult.success) {
+        playSuccessSound();
         setMissionWon(true);
         setTimeout(async () => {
           const summary = await generateLessonSummary(mission.concept, newAttempts, difficulty);
@@ -102,6 +108,9 @@ export default function MissionScreen({ route, navigation }) {
           stepMessage={currentStep?.message}
         />
       )}
+
+      {/* ── STAR VIEW (Light Up the Stars mission) ── */}
+      {hasStars && <StarGameView success={missionWon} />}
 
       {/* Input area */}
       <Text style={styles.inputLabel}>Describe your solution:</Text>

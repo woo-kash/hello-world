@@ -30,6 +30,7 @@ export const STARTER_MISSIONS = [
   {
     id: 'mission-2',
     difficulty: 'easy',
+    type: 'stars',
     title: 'Light Up the Stars',
     story: 'The night sky is dark! 5 stars need to be lit up, but you can only light one at a time.',
     challenge: 'How would you tell the computer to light up all 5 stars without writing "light star" 5 times?',

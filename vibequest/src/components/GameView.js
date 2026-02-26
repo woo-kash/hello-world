@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Svg, { Path, Circle } from 'react-native-svg';
+import Svg, { Circle, Rect, Line } from 'react-native-svg';
 
 const CELL = 62;
 
@@ -16,39 +16,37 @@ const COLORS = {
   wallLine:  'rgba(255,255,255,0.18)',
   goal:      '#27AE60',
   goalDark:  '#1E8449',
-  pac:       '#FFD700',
-  eye:       '#333',
 };
 
-// ─── Pacman (SVG pie slice) ──────────────────────────────────────────────────
+// ─── Robot (SVG) ─────────────────────────────────────────────────────────────
 
-function Pacman({ size, direction }) {
-  const ROTATION = { right: 0, down: 90, left: 180, up: 270 };
-  const deg = ROTATION[direction] ?? 0;
-  const r = size / 2;
-  const mouth = 30 * (Math.PI / 180); // 30° half-angle
-
-  // Mouth opens to the right. Top lip = angle -30°, bottom lip = +30°
-  const topX = r + r * Math.cos(mouth);
-  const topY = r - r * Math.sin(mouth);
-  const botX = r + r * Math.cos(mouth);
-  const botY = r + r * Math.sin(mouth);
-
-  // Large arc counterclockwise = the body (from top lip, the long way to bot lip)
-  const d = `M ${r} ${r} L ${topX} ${topY} A ${r} ${r} 0 1 0 ${botX} ${botY} Z`;
-
-  // Eye sits in the upper-left quadrant of the Pacman body
-  const eyeX = r - r * 0.18;
-  const eyeY = r - r * 0.46;
+function Robot({ size, direction }) {
+  const ROTATION = { right: 90, down: 180, left: 270, up: 0 };
+  const deg = ROTATION[direction] ?? 90;
+  const s = size;
 
   return (
     <Svg
-      width={size}
-      height={size}
+      width={s}
+      height={s}
       style={{ transform: [{ rotate: `${deg}deg` }] }}
     >
-      <Path d={d} fill={COLORS.pac} />
-      <Circle cx={eyeX} cy={eyeY} r={r * 0.11} fill={COLORS.eye} />
+      {/* Antenna */}
+      <Rect x={s * 0.45} y={s * 0.02} width={s * 0.1} height={s * 0.16} rx={s * 0.05} fill="#5B4FE9" />
+      <Circle cx={s * 0.5} cy={s * 0.02} r={s * 0.09} fill="#FFD700" />
+      {/* Head */}
+      <Rect x={s * 0.15} y={s * 0.16} width={s * 0.7} height={s * 0.52} rx={s * 0.12} fill="#7EC8E3" />
+      {/* Eyes */}
+      <Circle cx={s * 0.35} cy={s * 0.36} r={s * 0.11} fill="white" />
+      <Circle cx={s * 0.65} cy={s * 0.36} r={s * 0.11} fill="white" />
+      <Circle cx={s * 0.37} cy={s * 0.36} r={s * 0.065} fill="#1a1a2e" />
+      <Circle cx={s * 0.67} cy={s * 0.36} r={s * 0.065} fill="#1a1a2e" />
+      {/* Mouth */}
+      <Rect x={s * 0.28} y={s * 0.56} width={s * 0.44} height={s * 0.08} rx={s * 0.04} fill="#5B4FE9" />
+      {/* Direction arrow on forehead */}
+      <Line x1={s * 0.5} y1={s * 0.2} x2={s * 0.5} y2={s * 0.12} stroke="#fff" strokeWidth={s * 0.04} strokeLinecap="round" />
+      <Line x1={s * 0.5} y1={s * 0.12} x2={s * 0.43} y2={s * 0.19} stroke="#fff" strokeWidth={s * 0.04} strokeLinecap="round" />
+      <Line x1={s * 0.5} y1={s * 0.12} x2={s * 0.57} y2={s * 0.19} stroke="#fff" strokeWidth={s * 0.04} strokeLinecap="round" />
     </Svg>
   );
 }
@@ -131,7 +129,7 @@ export default function GameView({ layout, currentStep, stepMessage }) {
           )}
           {isRobot && (
             <View style={styles.robotCell}>
-              <Pacman size={CELL - 12} direction={robot.dir} />
+              <Robot size={CELL - 8} direction={robot.dir} />
             </View>
           )}
         </View>

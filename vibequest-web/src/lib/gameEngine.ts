@@ -1,26 +1,57 @@
 /**
- * gameEngine.js — executes AI logic blocks on a game grid and returns animation frames.
+ * gameEngine.ts — executes AI logic blocks on a game grid and returns animation frames.
+ * Ported from vibequest/src/utils/gameEngine.js
  */
 
-const DIRS = ['right', 'down', 'left', 'up'];
-const DELTA = { right: [1, 0], down: [0, 1], left: [-1, 0], up: [0, -1] };
+export interface LogicBlock {
+  type: 'if' | 'else' | 'loop' | 'action' | 'condition';
+  label: string;
+  children?: LogicBlock[];
+}
 
-const turnRight = (dir) => DIRS[(DIRS.indexOf(dir) + 1) % 4];
-const turnLeft  = (dir) => DIRS[(DIRS.indexOf(dir) + 3) % 4];
+export interface GameLayout {
+  grid: number[][];
+  cols: number;
+  rows: number;
+  goal: [number, number];
+  robotStart: { x: number; y: number };
+  robotDir?: Direction;
+}
 
-function cellAhead({ col, row, dir }) {
+export interface RobotState {
+  col: number;
+  row: number;
+  dir: Direction;
+}
+
+export interface AnimationFrame {
+  robot: RobotState;
+  message: string;
+  atGoal: boolean;
+}
+
+type Direction = 'right' | 'down' | 'left' | 'up';
+
+const DIRS: Direction[] = ['right', 'down', 'left', 'up'];
+const DELTA: Record<Direction, [number, number]> = {
+  right: [1, 0], down: [0, 1], left: [-1, 0], up: [0, -1],
+};
+
+const turnRight = (dir: Direction): Direction => DIRS[(DIRS.indexOf(dir) + 1) % 4];
+const turnLeft  = (dir: Direction): Direction => DIRS[(DIRS.indexOf(dir) + 3) % 4];
+
+function cellAhead({ col, row, dir }: RobotState): [number, number] {
   const [dc, dr] = DELTA[dir];
   return [col + dc, row + dr];
 }
 
-function isWall([col, row], { grid, cols, rows }) {
+function isWall([col, row]: [number, number], { grid, cols, rows }: GameLayout): boolean {
   if (col < 0 || col >= cols || row < 0 || row >= rows) return true;
   return grid[row]?.[col] === 1;
 }
 
-function evalCondition(label, robot, layout) {
+function evalCondition(label: string, robot: RobotState, layout: GameLayout): boolean {
   const s = label.toLowerCase();
-  // "no wall" / "no obstacle" → false-of-wall
   if ((s.includes('no wall') || s.includes('not') || s.includes('clear') || s.includes('free') || s.includes('open')) && !s.includes('goal')) {
     return !isWall(cellAhead(robot), layout);
   }
@@ -34,10 +65,9 @@ function evalCondition(label, robot, layout) {
   return true;
 }
 
-// Parse "two steps", "3 times", "twice", "one step" → count
-function getMoveCount(label) {
+function getMoveCount(label: string): number {
   const s = label.toLowerCase();
-  const words = { once: 1, one: 1, twice: 2, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8 };
+  const words: Record<string, number> = { once: 1, one: 1, twice: 2, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8 };
   for (const [word, n] of Object.entries(words)) {
     if (s.includes(word)) return n;
   }
@@ -45,12 +75,11 @@ function getMoveCount(label) {
   return m ? Math.min(parseInt(m[1]), 10) : 1;
 }
 
-function interpretAction(label) {
+function interpretAction(label: string): string | null {
   const s = label.toLowerCase();
   if (s.includes('turn right') || (s.includes('right') && s.includes('turn'))) return 'turn_right';
   if (s.includes('turn left')  || (s.includes('left')  && s.includes('turn'))) return 'turn_left';
   if (s.includes('turn around') || s.includes('180') || s.includes('reverse'))  return 'turn_around';
-  // "go around / go round / bypass" → handled specially in runBlocks
   if (s.includes('go around') || s.includes('go round') || s.includes('round it') ||
       s.includes('bypass') || s.includes('navigate around') || s.includes('avoid')) return 'go_around';
   if (s.includes('move') || s.includes('forward') || s.includes('walk') ||
@@ -58,7 +87,7 @@ function interpretAction(label) {
   return null;
 }
 
-function applyAction(type, robot, layout) {
+function applyAction(type: string, robot: RobotState, layout: GameLayout): RobotState {
   switch (type) {
     case 'move': {
       const ahead = cellAhead(robot);
@@ -71,12 +100,10 @@ function applyAction(type, robot, layout) {
   }
 }
 
-function getLoopCount(label) {
+function getLoopCount(label: string): number {
   const s = label.toLowerCase();
-  // Explicit number takes priority
   const m = s.match(/\b(\d+)\b/);
   if (m) return Math.min(parseInt(m[1]), 10);
-  // Open-ended loops ("always", "keep going", "forever", "repeat until", etc.)
   if (s.includes('always') || s.includes('keep') || s.includes('forever') ||
       s.includes('until') || s.includes('repeat') || s.includes('loop') ||
       s.includes('continuous') || s.includes('infinite')) return 50;
@@ -85,25 +112,23 @@ function getLoopCount(label) {
 
 /**
  * Execute AI logic blocks against a game layout.
- * @param {Array}  logicBlocks - from AI translation result
- * @param {Object} layout      - { grid, cols, rows, goal, robotStart, robotDir }
- * @returns {Array<{robot, message, atGoal}>} - one frame per action
+ * Returns one animation frame per action.
  */
-export function executeBlocks(logicBlocks, layout) {
+export function executeBlocks(logicBlocks: LogicBlock[], layout: GameLayout): AnimationFrame[] {
   const { robotStart, robotDir = 'right', goal } = layout;
-  let robot = { col: robotStart.x, row: robotStart.y, dir: robotDir };
-  const steps = [{ robot: { ...robot }, message: 'Ready! 🤖', atGoal: false }];
+  let robot: RobotState = { col: robotStart.x, row: robotStart.y, dir: robotDir };
+  const steps: AnimationFrame[] = [{ robot: { ...robot }, message: 'Ready! 🤖', atGoal: false }];
   const MAX = 60;
 
-  function atGoal(r) {
+  function atGoal(r: RobotState): boolean {
     return r.col === goal[0] && r.row === goal[1];
   }
 
-  function push(msg) {
+  function push(msg: string) {
     steps.push({ robot: { ...robot }, message: msg, atGoal: atGoal(robot) });
   }
 
-  function runBlocks(blocks) {
+  function runBlocks(blocks: LogicBlock[]) {
     let i = 0;
     while (i < blocks.length && steps.length < MAX) {
       const block = blocks[i];
@@ -112,7 +137,6 @@ export function executeBlocks(logicBlocks, layout) {
         const act = interpretAction(block.label);
 
         if (act === 'go_around') {
-          // Expand "go around" → turn right, step, turn left, step
           robot = applyAction('turn_right', robot, layout); push('turn right');
           robot = applyAction('move', robot, layout);       push('step forward');
           if (atGoal(robot)) return;
@@ -121,7 +145,6 @@ export function executeBlocks(logicBlocks, layout) {
           if (atGoal(robot)) return;
 
         } else if (act === 'move') {
-          // Respect "two steps", "3 times", etc.
           const count = getMoveCount(block.label);
           for (let k = 0; k < count && steps.length < MAX; k++) {
             robot = applyAction('move', robot, layout);
@@ -139,9 +162,7 @@ export function executeBlocks(logicBlocks, layout) {
         const condTrue = evalCondition(block.label, robot, layout);
         const children = block.children || [];
 
-        // Check whether the AI buried an else block as the last child
-        const elseAsChild = children.findLast?.(c => c.type === 'else')
-          ?? children.slice().reverse().find(c => c.type === 'else');
+        const elseAsChild = [...children].reverse().find(c => c.type === 'else');
         const ifBody   = elseAsChild ? children.filter(c => c.type !== 'else') : children;
         const elseBody = elseAsChild ? (elseAsChild.children || []) : null;
 
@@ -151,10 +172,9 @@ export function executeBlocks(logicBlocks, layout) {
           runBlocks(elseBody);
         }
 
-        // Also handle else as the NEXT sibling block
         if (i + 1 < blocks.length && blocks[i + 1].type === 'else') {
           if (!condTrue && !elseBody) runBlocks(blocks[i + 1].children || []);
-          i++; // always skip the sibling else so it isn't processed again
+          i++;
         }
 
       } else if (block.type === 'loop') {
