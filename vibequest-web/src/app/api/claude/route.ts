@@ -6,6 +6,7 @@ import {
   musicIterate, generateAvatar,
   Difficulty, Tier
 } from '@/lib/claude';
+import { containsInappropriate, CONTENT_BLOCKED_MSG } from '@/lib/contentFilter';
 
 const SUPABASE_CONFIGURED = !!process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_URL !== 'FILL_ME_IN';
 
@@ -40,6 +41,36 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const { action } = body;
+
+  // ── Content safety gate ─────────────────────────────────────────────
+  // Extract the child-supplied free text for the current action and check
+  // it before anything reaches the AI. Returns a friendly 400 on a hit.
+  const userText: string = (() => {
+    switch (action) {
+      case 'translate':      return body.userDescription ?? '';
+      case 'debug_check':
+      case 'remix_iterate':
+      case 'music_iterate':  return body.kidDescription ?? '';
+      case 'spec_evaluate':
+      case 'spec_build':     return body.spec ?? '';
+      case 'judge_generate': return body.missionSpec ?? '';
+      case 'judge_evaluate': return body.kidReasoning ?? '';
+      case 'generate_avatar':return body.description ?? '';
+      case 'builder_iterate':
+      case 'game_builder': {
+        // conversation is [{role, content}] — check the last user message
+        const msgs: { role: string; content: string }[] = body.conversation ?? [];
+        const last = [...msgs].reverse().find(m => m.role === 'user');
+        return last?.content ?? '';
+      }
+      default: return '';
+    }
+  })();
+
+  if (containsInappropriate(userText)) {
+    return NextResponse.json({ error: CONTENT_BLOCKED_MSG }, { status: 400 });
+  }
+  // ────────────────────────────────────────────────────────────────────
 
   if (SUPABASE_CONFIGURED) {
     const { FREE_MISSION_IDS } = await import('@/lib/stripe');
