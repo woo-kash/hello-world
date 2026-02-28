@@ -113,12 +113,22 @@ Translate this into logic blocks and code. Evaluate if it solves the mission.`;
 
   const message = await getClient().messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 1024,
+    max_tokens: 2048,
     messages: [{ role: 'user', content: userPrompt }],
     system: systemPrompt,
   });
 
-  return parseJSON((message.content[0] as { text: string }).text);
+  try {
+    return parseJSON((message.content[0] as { text: string }).text);
+  } catch {
+    return {
+      logicBlocks: [],
+      code: '',
+      explanation: "I couldn't understand that — try describing it differently!",
+      success: false,
+      hint: 'Try breaking your solution into smaller steps.',
+    };
+  }
 }
 
 /**
@@ -523,19 +533,26 @@ ${TIER_PROMPTS[tier]}
 MUSIC SETTINGS schema:
 - "title": string — song title
 - "bpm": number 60-180 — tempo
-- "instruments": array of active instruments, subset of ["drums","synth","bass","arp"]
-- "melody": array of 16 MIDI note numbers (0 = silence, 60=C4, 62=D4, 64=E4, 65=F4, 67=G4, 69=A4, 71=B4, 72=C5)
-- "bass": array of 16 MIDI note numbers (0 = silence, bass range 36-48)
+- "instruments": array of active instrument keys — any subset of ["drums","synth","bass","arp","voice","lead","pad","perc"]
+- "melody": array of 16 MIDI note numbers (0=silence, 60=C4, 62=D4, 64=E4, 65=F4, 67=G4, 69=A4, 71=B4, 72=C5)
+- "bass": array of 16 MIDI note numbers (0=silence, bass range 36-48)
 - "drums": array of 16 values (1=hit, 0=silence)
 - "arp": array of 16 values (1=on, 0=off)
+- "voice": array of 16 MIDI note numbers (0=silence, range 48-72) — choir/vocal melody
+- "lead": array of 16 MIDI note numbers (0=silence, range 60-84) — bright lead instrument (horn, flute, guitar solo)
+- "pad": array of 16 MIDI note numbers (0=silence, range 48-72) — slow-attack strings/chord pad (put note on beat 1 of each bar, 0 elsewhere)
+- "perc": array of 16 values (1=hit, 0=silence) — extra percussion (claps, shakers)
 
 Guidelines:
-- If the kid says "space adventure": use minor pentatonic notes, moderate BPM (~100-120), include arps
-- If they say "funky": syncopated drums (hits on 2,6,10,14), heavy bass, high BPM (130+)
+- If the kid says "space adventure": minor pentatonic notes, BPM ~100-120, include arps
+- If they say "funky": syncopated drums (hits on 2,6,10,14), heavy bass, BPM 130+
 - If they say "faster": increase BPM by 20-40
 - If they say "slower": decrease BPM by 20-30
-- If they say "add drums" / "more bass": include that in instruments array
-- Always return all 16 values in each array
+- If they say "add voice" / "add vocals" / "singing" / "choir": add "voice" to instruments, write a vocal melody
+- If they say "add flute" / "add horn" / "add guitar" / "lead instrument": add "lead" to instruments, write a lead melody
+- If they say "add strings" / "orchestra" / "pad" / "cinematic": add "pad" to instruments, put chord root notes on beat 1 of each bar
+- If they say "add clap" / "add snare" / "extra percussion" / "add perc": add "perc" to instruments, write a syncopated pattern
+- Always return all 16 values in each array you modify
 - Only modify what the description asks for; keep everything else from currentSettings
 
 Return valid JSON only:

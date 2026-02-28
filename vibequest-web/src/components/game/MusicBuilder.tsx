@@ -23,14 +23,22 @@ interface MusicSettings {
   bass: number[];
   drums: number[];
   arp: number[];
+  voice: number[];
+  lead: number[];
+  pad: number[];
+  perc: number[];
 }
 
 const BEATS = 16;
 const ROWS = [
-  { key: 'drums' as const, emoji: '🥁', label: 'Drums', color: '#FF6B6B' },
-  { key: 'melody' as const, emoji: '🎹', label: 'Synth Lead', color: '#4ECDC4' },
-  { key: 'bass' as const, emoji: '🎸', label: 'Bass', color: '#A855F7' },
-  { key: 'arp' as const, emoji: '✨', label: 'Sparkle', color: '#FFE66D' },
+  { key: 'drums' as const, instKey: 'drums',  emoji: '🥁', label: 'Drums',      color: '#FF6B6B' },
+  { key: 'melody' as const, instKey: 'synth', emoji: '🎹', label: 'Synth Lead', color: '#4ECDC4' },
+  { key: 'bass' as const,   instKey: 'bass',  emoji: '🎸', label: 'Bass',       color: '#A855F7' },
+  { key: 'arp' as const,    instKey: 'arp',   emoji: '✨', label: 'Sparkle',    color: '#FFE66D' },
+  { key: 'voice' as const,  instKey: 'voice', emoji: '🎤', label: 'Voice',      color: '#FF69B4' },
+  { key: 'lead' as const,   instKey: 'lead',  emoji: '🎺', label: 'Lead',       color: '#FFA500' },
+  { key: 'pad' as const,    instKey: 'pad',   emoji: '🎻', label: 'Strings',    color: '#6495ED' },
+  { key: 'perc' as const,   instKey: 'perc',  emoji: '🪘', label: 'Perc',       color: '#90EE90' },
 ];
 
 const DEFAULT_SETTINGS: MusicSettings = {
@@ -41,6 +49,10 @@ const DEFAULT_SETTINGS: MusicSettings = {
   bass:   [36, 36, 38, 36, 36, 36, 38, 38, 36, 36, 38, 36, 36, 36, 38, 38],
   drums:  [1,0,0,0, 1,0,1,0, 1,0,0,1, 1,0,1,0],
   arp:    [0,1,0,1, 0,1,0,1, 0,1,0,1, 0,1,0,1],
+  voice:  [0,0,0,0, 60,0,60,0, 0,0,0,0, 62,0,62,0],
+  lead:   [0,64,0,0, 67,0,64,0, 0,65,0,0, 67,0,0,0],
+  pad:    [60,0,0,0, 0,0,0,0, 60,0,0,0, 0,0,0,0],
+  perc:   [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,1],
 };
 
 export default function MusicBuilder({ mission, childId, childName, tier }: Props) {
@@ -67,11 +79,11 @@ export default function MusicBuilder({ mission, childId, childName, tier }: Prop
     patchPreview({ bpm });
   }
 
-  function toggleInstrument(key: string) {
+  function toggleInstrument(instKey: string) {
     setSettings(s => {
-      const active = s.instruments.includes(key)
-        ? s.instruments.filter(i => i !== key)
-        : [...s.instruments, key];
+      const active = s.instruments.includes(instKey)
+        ? s.instruments.filter(i => i !== instKey)
+        : [...s.instruments, instKey];
       patchPreview({ instruments: active });
       return { ...s, instruments: active };
     });
@@ -108,7 +120,11 @@ export default function MusicBuilder({ mission, childId, childName, tier }: Prop
       // Regenerate the HTML with new settings embedded
       const newHtml = MUSIC_TEMPLATE.baseHtml.replace(
         /const SETTINGS = \{[\s\S]*?\};/,
-        `const SETTINGS = ${JSON.stringify({ ...newSettings, drumColor: '#FF6B6B', synthColor: '#4ECDC4', bassColor: '#A855F7', arpColor: '#FFE66D' }, null, 2)};`
+        `const SETTINGS = ${JSON.stringify({
+          ...newSettings,
+          drumColor: '#FF6B6B', synthColor: '#4ECDC4', bassColor: '#A855F7', arpColor: '#FFE66D',
+          voiceColor: '#FF69B4', leadColor: '#FFA500', padColor: '#6495ED', percColor: '#90EE90',
+        }, null, 2)};`
       );
       setCurrentHtml(newHtml);
     } catch {
@@ -185,12 +201,11 @@ export default function MusicBuilder({ mission, childId, childName, tier }: Prop
               <p className="font-bold text-sm mb-3" style={{ color: 'var(--vq-text)' }}>🎼 Instruments</p>
               <div className="grid grid-cols-2 gap-2">
                 {ROWS.map(row => {
-                  const active = settings.instruments.includes(row.key) ||
-                    (row.key === 'melody' && settings.instruments.includes('synth'));
+                  const active = settings.instruments.includes(row.instKey);
                   return (
                     <button
                       key={row.key}
-                      onClick={() => toggleInstrument(row.key === 'melody' ? 'synth' : row.key)}
+                      onClick={() => toggleInstrument(row.instKey)}
                       className="p-3 rounded-2xl border-2 transition-all text-left"
                       style={{
                         borderColor: active ? row.color : 'var(--vq-border)',
@@ -291,9 +306,9 @@ export default function MusicBuilder({ mission, childId, childName, tier }: Prop
         </div>
 
         {/* Right: Live preview */}
-        <div className="flex-1 p-4 flex flex-col">
-          <LivePreview code={currentHtml} childName={childName} loading={loading} />
-          <p className="text-xs mt-2 text-center" style={{ color: 'var(--vq-primary)' }}>
+        <div className="flex-1 p-4 flex flex-col min-h-0">
+          <LivePreview code={currentHtml} childName={childName} loading={loading} className="flex-1 min-h-0" />
+          <p className="text-xs mt-2 text-center shrink-0" style={{ color: 'var(--vq-primary)' }}>
             🎵 Click ▶ Play in the preview to hear your music!
           </p>
         </div>

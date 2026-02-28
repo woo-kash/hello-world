@@ -100,7 +100,9 @@ export default function HomePage() {
       {/* Nav */}
       <nav className="border-b border-[var(--vq-border)] px-6 py-4 flex items-center justify-between" style={{ background: 'var(--vq-surface)' }}>
         <div className="flex items-center gap-2">
-          <Image src="/logo.svg" width={32} height={32} alt="" />
+          <div style={{ width: 32, height: 32, borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}>
+            <Image src="/logo.png" width={32} height={32} alt="VibeQuest" />
+          </div>
           <span className="font-black text-xl tracking-tight" style={{ color: 'var(--vq-text)' }}>VibeQuest</span>
         </div>
         <div className="flex items-center gap-4">
@@ -298,8 +300,10 @@ export default function HomePage() {
 
       {/* CTA */}
       <section className="max-w-2xl mx-auto px-6 py-20 text-center relative z-10">
-        <div className="text-6xl mb-6">
-          <Image src="/logo.svg" width={72} height={72} alt="" className="mx-auto" />
+        <div className="mb-6 flex justify-center">
+          <div style={{ width: 96, height: 96, borderRadius: 20, overflow: 'hidden' }}>
+            <Image src="/logo.png" width={96} height={96} alt="VibeQuest" />
+          </div>
         </div>
         <h2 className="text-4xl font-black mb-4" style={{ color: 'var(--vq-text)' }}>Your child&apos;s AI superpower starts here</h2>
         <p className="mb-8 text-lg" style={{ color: 'var(--vq-muted)' }}>
@@ -318,7 +322,9 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-[var(--vq-border)] px-6 py-8 text-center text-sm relative z-10" style={{ background: 'var(--vq-surface)', color: 'var(--vq-muted)' }}>
         <div className="flex items-center justify-center gap-2 mb-2">
-          <Image src="/logo.svg" width={24} height={24} alt="" />
+          <div style={{ width: 24, height: 24, borderRadius: 6, overflow: 'hidden', flexShrink: 0 }}>
+            <Image src="/logo.png" width={24} height={24} alt="" />
+          </div>
           <span className="font-black" style={{ color: 'var(--vq-text)' }}>VibeQuest</span>
         </div>
         <p>© {new Date().getFullYear()} VibeQuest. Teaching kids the 10 skills that matter in the AI era.</p>

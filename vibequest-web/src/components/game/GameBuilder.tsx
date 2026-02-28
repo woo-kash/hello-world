@@ -450,7 +450,7 @@ ${template?.baseHtml ?? ''}`,
           </div>
 
           {/* Right: Live preview */}
-          <div className="flex-1 p-4 flex flex-col">
+          <div className="flex-1 p-4 flex flex-col min-h-0">
             {!tier1Started ? (
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center" style={{ color: 'var(--vq-muted)' }}>
@@ -460,7 +460,7 @@ ${template?.baseHtml ?? ''}`,
                 </div>
               </div>
             ) : (
-              <LivePreview code={currentHtml} childName={childName} loading={loading} />
+              <LivePreview code={currentHtml} childName={childName} loading={loading} className="flex-1 min-h-0" />
             )}
             {tier1Started && (
               <p className="text-xs mt-2 text-center" style={{ color: 'var(--vq-muted)' }}>
@@ -567,9 +567,9 @@ ${template?.baseHtml ?? ''}`,
         </div>
 
         {/* Right: Live preview */}
-        <div className="flex-1 p-4 flex flex-col">
-          <LivePreview code={currentHtml} childName={childName} loading={loading} />
-          <p className="text-xs mt-2 text-center" style={{ color: 'var(--vq-muted)' }}>
+        <div className="flex-1 p-4 flex flex-col min-h-0">
+          <LivePreview code={currentHtml} childName={childName} loading={loading} className="flex-1 min-h-0" />
+          <p className="text-xs mt-2 text-center shrink-0" style={{ color: 'var(--vq-muted)' }}>
             🎮 Arrow keys / WASD to play{tier >= 2 ? ' · Space to shoot/jump' : ''}
           </p>
         </div>

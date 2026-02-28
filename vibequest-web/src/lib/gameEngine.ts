@@ -50,19 +50,41 @@ function isWall([col, row]: [number, number], { grid, cols, rows }: GameLayout):
   return grid[row]?.[col] === 1;
 }
 
+// Theme obstacle words kids naturally say: tree (forest), asteroid/meteor (space),
+// rock/boulder (pirate), barrier/pillar (generic).
+const OBSTACLE_WORDS = [
+  'wall', 'obstacle', 'block', 'blocked',
+  'tree', 'bush', 'hedge', 'trunk', 'stump', // forest theme
+  'asteroid', 'meteor', 'planet', 'satellite', // space theme
+  'rock', 'boulder', 'reef', 'barrel', 'cannon', // pirate theme
+  'barrier', 'pillar', 'fence', 'border',
+];
+
 function evalCondition(label: string, robot: RobotState, layout: GameLayout): boolean {
   const s = label.toLowerCase();
-  if ((s.includes('no wall') || s.includes('not') || s.includes('clear') || s.includes('free') || s.includes('open')) && !s.includes('goal')) {
+
+  // "clear path / no obstacle" — check negatives first so "no tree" beats "tree"
+  const isNegated =
+    s.includes('not') ||
+    s.includes('clear') ||
+    s.includes('free') ||
+    s.includes('open') ||
+    s.includes('path') ||
+    OBSTACLE_WORDS.some(w => s.includes(`no ${w}`));
+  if (isNegated && !s.includes('goal') && !s.includes('exit')) {
     return !isWall(cellAhead(robot), layout);
   }
-  if (s.includes('wall') || s.includes('obstacle') || s.includes('block')) {
+
+  // Obstacle presence — any thematic word that means "something blocking ahead"
+  if (OBSTACLE_WORDS.some(w => s.includes(w))) {
     return isWall(cellAhead(robot), layout);
   }
+
   if (s.includes('goal') || s.includes('exit') || s.includes('door') || s.includes('escape') || s.includes('reach')) {
     const [gc, gr] = layout.goal;
     return robot.col === gc && robot.row === gr;
   }
-  return true;
+  return false;
 }
 
 function getMoveCount(label: string): number {
@@ -137,12 +159,23 @@ export function executeBlocks(logicBlocks: LogicBlock[], layout: GameLayout): An
         const act = interpretAction(block.label);
 
         if (act === 'go_around') {
+          // turn right and move along the wall until a gap is found (max 3 steps)
           robot = applyAction('turn_right', robot, layout); push('turn right');
-          robot = applyAction('move', robot, layout);       push('step forward');
-          if (atGoal(robot)) return;
+          for (let k = 0; k < 3 && steps.length < MAX; k++) {
+            robot = applyAction('move', robot, layout); push('step forward');
+            if (atGoal(robot)) return;
+            if (!isWall(cellAhead(robot), layout)) break;
+          }
+          // turn left (back to original direction), step forward past the wall
           robot = applyAction('turn_left', robot, layout);  push('turn left');
-          robot = applyAction('move', robot, layout);       push('step forward');
+          robot = applyAction('move', robot, layout);        push('step forward');
           if (atGoal(robot)) return;
+          // turn left and move back to original lane
+          robot = applyAction('turn_left', robot, layout);  push('turn left');
+          robot = applyAction('move', robot, layout);        push('step forward');
+          if (atGoal(robot)) return;
+          // re-align (turn right to resume original direction)
+          robot = applyAction('turn_right', robot, layout); push('turn right');
 
         } else if (act === 'move') {
           const count = getMoveCount(block.label);

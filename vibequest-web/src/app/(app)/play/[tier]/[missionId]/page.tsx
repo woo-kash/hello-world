@@ -119,7 +119,7 @@ export default function PlayPage() {
           action: 'translate',
           missionId,
           userDescription: input,
-          missionContext: mission!.challenge,
+          missionContext: `${mission!.challenge} Win condition: ${mission!.winCondition}.`,
           difficulty,
           tier,
         }),
@@ -139,6 +139,7 @@ export default function PlayPage() {
 
       // Run animation for grid missions
       const m = mission!;
+      let gridSuccess = false;
       if (m.type === 'grid' && m.grid && data.logicBlocks) {
         const animFrames = executeBlocks(data.logicBlocks, {
           grid: m.grid,
@@ -149,6 +150,8 @@ export default function PlayPage() {
           robotDir: m.robotDir,
         });
         setFrames(animFrames);
+        // For grid missions: success only if the character actually reaches the goal
+        gridSuccess = animFrames.length > 0 && (animFrames[animFrames.length - 1].atGoal ?? false);
       }
 
       // Run scene animation for logic missions with sceneConfig
@@ -157,7 +160,11 @@ export default function PlayPage() {
         setSceneFrames(scenes);
       }
 
-      if (data.success) {
+      // Grid missions: trust the game engine result, not the AI
+      // All other missions: trust the AI's success flag
+      const actualSuccess = m.type === 'grid' ? gridSuccess : data.success;
+
+      if (actualSuccess) {
         // Save progress
         if (childId) {
           await fetch('/api/progress', {
@@ -173,26 +180,6 @@ export default function PlayPage() {
     } finally {
       setLoading(false);
     }
-  }
-
-  if (showVictory) {
-    return (
-      <VictoryScreen
-        mission={mission}
-        attempts={attempts}
-        tier={tier}
-        childId={childId}
-        onNext={() => router.push('/dashboard')}
-        onReplay={() => {
-          setShowVictory(false);
-          setResult(null);
-          setInput('');
-          setAttempts(0);
-          setFrames([]);
-          setSceneFrames([]);
-        }}
-      />
-    );
   }
 
   const placeholders: Record<1 | 2 | 3, string> = {
@@ -328,6 +315,7 @@ export default function PlayPage() {
               robotDir={mission.robotDir ?? 'right'}
               frames={frames}
               theme={mission.theme}
+              character={mission.character}
             />
           )}
 
@@ -371,6 +359,25 @@ export default function PlayPage() {
           )}
         </div>
       </div>
+
+      {/* Victory overlay — shown on top of the game, not as a separate page */}
+      {showVictory && (
+        <VictoryScreen
+          mission={mission}
+          attempts={attempts}
+          tier={tier}
+          childId={childId}
+          onNext={() => router.push('/dashboard')}
+          onReplay={() => {
+            setShowVictory(false);
+            setResult(null);
+            setInput('');
+            setAttempts(0);
+            setFrames([]);
+            setSceneFrames([]);
+          }}
+        />
+      )}
     </div>
   );
 }

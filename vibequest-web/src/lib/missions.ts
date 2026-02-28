@@ -37,6 +37,8 @@ export interface Mission {
   type?: MissionType;
   // Grid theme
   theme?: 'space' | 'forest' | 'pirate';
+  // Character emoji to display in grid/stars games instead of the default robot
+  character?: string;
   // Scene config for logic missions
   sceneConfig?: SceneConfig;
   // Tier 2: starter code snippet
@@ -132,6 +134,7 @@ const TIER1_MISSIONS: Mission[] = [
     secondarySkill: 'precision-of-language',
     xp: 75,
     title: 'Space Rocket Launch',
+    character: '🚀',
     story: "Captain Star's rocket needs to reach the launch pad, but asteroids are in the way!",
     challenge: 'Guide the rocket past the asteroids to reach the launch pad. Remember, it can only fly straight or turn!',
     concept: 'sequences + conditionals',
@@ -213,6 +216,7 @@ const TIER1_MISSIONS: Mission[] = [
     secondarySkill: 'systems-thinking',
     xp: 100,
     title: 'Treasure Hunt',
+    character: '🏴‍☠️',
     story: "Pirate Pete found a map! The treasure is hidden in a maze, but the path changes based on what he sees.",
     challenge: 'Guide Pete through the maze using conditionals and loops. He needs to check every turn!',
     concept: 'loops + nested conditionals',
@@ -1004,6 +1008,56 @@ function addMsg(text, type) {
 // ─── New Game + Music Missions ──────────────────────────────────────────────
 
 const NEW_GAME_MISSIONS: Mission[] = [
+  // ── Tier 1: all 6 game templates ───────────────────────────────────────────
+  // Snake — Tier 1
+  {
+    id: 'tier1-game-snake',
+    tier: 1,
+    difficulty: 'easy',
+    type: 'game-builder',
+    gameTemplateId: 'snake',
+    free: true,
+    title: '🐍 Friendly Snake',
+    story: "A tiny snake named Slinky is hungry! Every time Slinky eats a star it grows bigger. Help design Slinky's world — change its look, pick new food, make it yours!",
+    challenge: "Customise the Snake game: change the snake emoji, pick new food items, and describe the grid world Slinky lives in.",
+    concept: 'Game customisation — characters, objects, environment',
+    winCondition: 'Snake game customised and playable with at least 1 AI iteration',
+    starterHint: 'Try: "Make the snake a sparkly dragon 🐉 and the food be treasure chests 💎 on a dark blue grid"',
+    primarySkill: 'rapid-prototyping',
+    xp: 60,
+  },
+  // Brick Breaker — Tier 1
+  {
+    id: 'tier1-game-brick',
+    tier: 1,
+    difficulty: 'medium',
+    type: 'game-builder',
+    gameTemplateId: 'brick-breaker',
+    title: '🧱 Brick Smasher',
+    story: "BOING! A magic ball bounces around smashing bricks! You're the game artist — design the most satisfying brick-smashing adventure with your own theme!",
+    challenge: 'Customise the Brick Breaker game: pick a colour theme, change the brick emojis, and design the paddle. Make it look amazing!',
+    concept: 'Collision detection and game design',
+    winCondition: 'Brick Breaker customised with a theme and playable',
+    starterHint: 'Try: "Make an underwater theme — blue bricks, fish emojis, coral paddle, bubbles when bricks break"',
+    primarySkill: 'rapid-prototyping',
+    xp: 80,
+  },
+  // Space Blaster — Tier 1
+  {
+    id: 'tier1-game-space',
+    tier: 1,
+    difficulty: 'hard',
+    type: 'game-builder',
+    gameTemplateId: 'space-blaster',
+    title: '🚀 Space Shooter',
+    story: "Aliens are invading the galaxy! Design your ultimate space battle — what does your ship look like? Who are the enemies? Make the most epic space game ever!",
+    challenge: 'Customise the Space Blaster: change the spaceship, alien enemies, and background. Describe a unique space world!',
+    concept: 'Game events and scoring',
+    winCondition: 'Space game customised and playable with a unique theme',
+    starterHint: 'Try: "Make the ship a unicorn 🦄, the enemies be broccoli 🥦, and the background a rainbow galaxy"',
+    primarySkill: 'rapid-prototyping',
+    xp: 100,
+  },
   // Flappy Runner — Tier 1
   {
     id: 'tier1-game-flappy',
@@ -1021,6 +1075,41 @@ const NEW_GAME_MISSIONS: Mission[] = [
     xp: 60,
     free: true,
   },
+  // ── Tier 2: fill in flappy + maze ──────────────────────────────────────────
+  // Flappy — Tier 2
+  {
+    id: 'tier2-game-flappy',
+    tier: 2,
+    difficulty: 'easy',
+    type: 'game-builder',
+    gameTemplateId: 'flappy',
+    title: '🐦 Flappy Physics Lab',
+    story: "You're a junior game designer at VibeStudio. The Flappy template is on your desk — tune the physics and aesthetics to create the perfect flying challenge.",
+    challenge: "Modify the Flappy game's physics and visuals: adjust gravity, pipe gap, scroll speed, or character. Use at least 2 iterations to balance the difficulty.",
+    concept: 'Game physics — gravity, speed, difficulty tuning',
+    winCondition: 'Flappy game with custom physics and aesthetics, 2+ iterations',
+    starterHint: 'Try: "Change the bird to a rocket 🚀, gravity to 0.4, pipes into skyscrapers, gap size 160px"',
+    primarySkill: 'rapid-prototyping',
+    secondarySkill: 'systems-thinking',
+    xp: 75,
+  },
+  // Maze — Tier 2
+  {
+    id: 'tier2-game-maze',
+    tier: 2,
+    difficulty: 'medium',
+    type: 'game-builder',
+    gameTemplateId: 'maze',
+    title: '👻 Maze Maker',
+    story: "Classic Pac-Man — but YOU control the rules! Change how the ghosts behave, redesign the scoring, add new power-ups. This maze is yours now.",
+    challenge: 'Redesign the Maze game by changing the player character, ghost behaviour, or scoring rules. Describe every change precisely.',
+    concept: 'AI behaviour and game state management',
+    winCondition: 'Maze game with custom characters and at least one mechanic changed',
+    starterHint: 'Try: "Make the player a cat 🐱 chasing mice 🐭, ghosts become dogs that bark when near, power-up freezes them for 3 seconds"',
+    primarySkill: 'systems-thinking',
+    secondarySkill: 'precision-of-language',
+    xp: 100,
+  },
   // Brick Breaker — Tier 2
   {
     id: 'tier2-game-brick',
@@ -1037,6 +1126,58 @@ const NEW_GAME_MISSIONS: Mission[] = [
     primarySkill: 'rapid-prototyping',
     secondarySkill: 'remix-and-extend',
     xp: 100,
+  },
+  // ── Tier 3: fill in maze + snake + brick ───────────────────────────────────
+  // Maze — Tier 3
+  {
+    id: 'tier3-game-maze',
+    tier: 3,
+    difficulty: 'medium',
+    type: 'game-builder',
+    gameTemplateId: 'maze',
+    title: '👻 Ghost AI Overhaul',
+    story: "Pac-Man is a solved problem — so break it. Your brief: completely rewrite the ghost AI logic and add a mechanic no version of Pac-Man has had before.",
+    challenge: "Rewrite the ghost AI using precise specifications. Define each ghost's personality and pathfinding strategy. Add one original mechanic.",
+    concept: 'AI pathfinding and state machine design',
+    winCondition: 'Ghost behaviour meaningfully changed with clear per-ghost logic; original mechanic implemented',
+    starterHint: 'Specify per ghost: "Ghost 1 (red): always targets player\'s current cell. Ghost 2 (pink): targets 4 cells ahead of player direction. Ghost 3 (cyan): random until within 5 cells, then chase."',
+    primarySkill: 'specification-writing',
+    secondarySkill: 'systems-thinking',
+    xp: 175,
+  },
+  // Snake — Tier 3
+  {
+    id: 'tier3-game-snake',
+    tier: 3,
+    difficulty: 'hard',
+    type: 'game-builder',
+    gameTemplateId: 'snake',
+    title: '🐍 Snake 2.0 — Feature Drop',
+    story: "Classic Snake is too simple. You're a senior engineer at VibeSoft Games. Design Snake 2.0: new mechanics, an AI opponent, portals, or a leaderboard. You spec it, the AI builds it.",
+    challenge: 'Write a detailed feature specification for an advanced Snake game and implement it through precise prompting. Aim for 3+ novel features.',
+    concept: 'Specification writing and feature planning',
+    winCondition: 'At least 3 novel features working correctly as described in spec',
+    starterHint: 'Write a spec: "Feature 1: Walls spawn randomly every 10s. Feature 2: AI snake competes for food. Feature 3: Portal pairs on opposite walls. Feature 4: localStorage leaderboard top 5."',
+    primarySkill: 'specification-writing',
+    secondarySkill: 'rapid-prototyping',
+    xp: 200,
+  },
+  // Brick Breaker — Tier 3
+  {
+    id: 'tier3-game-brick',
+    tier: 3,
+    difficulty: 'hard',
+    type: 'game-builder',
+    gameTemplateId: 'brick-breaker',
+    title: '🧱 Breakout Pro Edition',
+    story: "You've been hired to build the premium version of Breakout for VibeArcade. Power-ups, multi-ball, boss bricks, screen shake — spec the features and engineer it precisely.",
+    challenge: 'Design and build a professional Breakout game using prompt engineering. Include power-ups, physics tweaks, and visual effects described precisely.',
+    concept: 'Prompt engineering for game feature development',
+    winCondition: 'Game includes 3+ custom features working correctly as specified',
+    starterHint: 'Write precise power-up specs: "(1) Multi-ball: spawns 2 extra balls. (2) Wide Paddle: doubles width for 10 seconds. (3) Laser: shoots beam destroying all bricks in that column."',
+    primarySkill: 'precision-of-language',
+    secondarySkill: 'specification-writing',
+    xp: 200,
   },
   // Flappy Advanced — Tier 3
   {
@@ -1116,14 +1257,26 @@ const LITERATURE_MISSIONS: Mission[] = [
     tier: 1,
     difficulty: 'easy',
     title: "Alice's Maze Machine",
-    story: "Alice has tumbled into Wonderland and the path keeps changing! She needs a rulebook so she always knows which way to go.",
-    challenge: "Write rules for Alice: if the door is red she goes left, if it's blue she goes right, if it's striped she jumps over it.",
+    character: '👧',
+    story: "Alice has tumbled into Wonderland! The garden maze keeps changing — she needs to follow the right path to reach the magical door.",
+    challenge: "Guide Alice through the Wonderland maze. Tell her when to move forward, when to turn, and how to reach the glowing exit.",
     concept: 'conditionals',
-    winCondition: 'All three door colours handled with correct directions',
-    starterHint: 'Think of each colour as a question: "Is it red? Then..."',
+    winCondition: 'Alice reaches the exit door',
+    starterHint: 'Check if there is a wall ahead before moving! If there is, turn — if not, go forward.',
     free: true,
     type: 'grid',
     theme: 'forest',
+    grid: [
+      [0, 0, 0, 0, 0],
+      [0, 1, 0, 1, 0],
+      [0, 1, 0, 0, 0],
+      [0, 0, 0, 1, 2],
+    ],
+    cols: 5,
+    rows: 4,
+    robotStart: { x: 0, y: 0 },
+    robotDir: 'right',
+    goal: [4, 3],
     primarySkill: 'decomposition',
     xp: 75,
   },

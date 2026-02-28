@@ -92,8 +92,8 @@ export default function VictoryScreen({ mission, attempts, tier, childId, onNext
   const celebrationEmojis = ['🎉', '✨', '🌟', '🏆', '🚀', '🎊'];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-      <div className="max-w-lg w-full text-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto" style={{ background: 'rgba(13,61,48,0.88)', backdropFilter: 'blur(12px)' }}>
+      <div className="max-w-lg w-full text-center my-auto">
         {/* Celebration */}
         <div className="flex justify-center gap-3 text-4xl mb-6 animate-bounce">
           {celebrationEmojis.slice(0, 3).map((e, i) => (
@@ -101,8 +101,8 @@ export default function VictoryScreen({ mission, attempts, tier, childId, onNext
           ))}
         </div>
 
-        <h1 className="text-4xl font-bold text-white mb-2">You Did It!</h1>
-        <p className="text-purple-200 mb-2">
+        <h1 className="text-4xl font-bold text-white mb-2">You Did It! 🎉</h1>
+        <p className="mb-2" style={{ color: '#a7f3d0' }}>
           {attempts === 1 ? 'First try — you are amazing!' : `Completed in ${attempts} attempts. Great perseverance!`}
         </p>
 

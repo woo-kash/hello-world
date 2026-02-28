@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const PLANS = [
   {
@@ -63,7 +64,9 @@ export default function PricingPage() {
     <div className="min-h-screen" style={{ background: 'var(--vq-bg)' }}>
       <header className="border-b px-6 py-4 flex items-center justify-between" style={{ borderColor: 'var(--vq-border)', background: 'var(--vq-surface)' }}>
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-2xl">✨</span>
+          <div style={{ width: 32, height: 32, borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}>
+            <Image src="/logo.png" width={32} height={32} alt="VibeQuest" />
+          </div>
           <span className="font-bold text-xl" style={{ color: 'var(--vq-text)' }}>VibeQuest</span>
         </Link>
         <Link href="/dashboard" className="text-sm transition-colors hover:text-[var(--vq-text)]" style={{ color: 'var(--vq-primary)' }}>

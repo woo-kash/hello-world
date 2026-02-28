@@ -28,6 +28,7 @@ export default function VoiceInput({ value, onChange, onSubmit, placeholder, row
   const [interim, setInterim] = useState('');
   const [supported, setSupported] = useState(false);
   const [micError, setMicError] = useState(false);
+  const [micErrorMsg, setMicErrorMsg] = useState('');
   const recognitionRef = useRef<AnyRecognition>(null);
   const gotResultRef = useRef(false);
   // Keep a ref to the latest value so onend closure doesn't go stale
@@ -42,10 +43,11 @@ export default function VoiceInput({ value, onChange, onSubmit, placeholder, row
     const SR = getSpeechRecognition();
     if (!SR) return;
     setMicError(false);
+    setMicErrorMsg('');
     gotResultRef.current = false;
 
     const recognition = new SR();
-    recognition.continuous = true;   // keep recording until stopListening() called
+    recognition.continuous = false;  // one-shot: fires result then auto-stops
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
@@ -82,7 +84,18 @@ export default function VoiceInput({ value, onChange, onSubmit, placeholder, row
     recognition.onerror = (e: AnyRecognition) => {
       setListening(false);
       setInterim('');
-      if (e.error === 'not-allowed') setMicError(true);
+      setMicError(true);
+      if (e.error === 'not-allowed' || e.error === 'permission-denied') {
+        setMicErrorMsg('Mic permission denied — please allow microphone access in your browser');
+      } else if (e.error === 'no-speech') {
+        setMicErrorMsg('No speech detected — try speaking louder or closer to your mic');
+      } else if (e.error === 'network') {
+        setMicErrorMsg('Network error — voice recognition requires an internet connection');
+      } else if (e.error === 'service-not-allowed') {
+        setMicErrorMsg('Voice not allowed on this page — try HTTPS or a different browser');
+      } else {
+        setMicErrorMsg(`Voice error: ${e.error ?? 'unknown'}`);
+      }
     };
 
     recognitionRef.current = recognition;
@@ -132,10 +145,10 @@ export default function VoiceInput({ value, onChange, onSubmit, placeholder, row
         )}
       </div>
       {listening && (
-        <p className="text-red-500 text-xs mt-1 animate-pulse">🎤 Listening — speak now…</p>
+        <p className="text-xs mt-1 animate-pulse" style={{ color: '#ef4444' }}>🎤 Listening — speak your answer…</p>
       )}
-      {micError && (
-        <p className="text-red-500 text-xs mt-1">🎤 Mic permission denied — please allow microphone access</p>
+      {micError && micErrorMsg && (
+        <p className="text-xs mt-1" style={{ color: '#ef4444' }}>⚠️ {micErrorMsg}</p>
       )}
     </div>
   );

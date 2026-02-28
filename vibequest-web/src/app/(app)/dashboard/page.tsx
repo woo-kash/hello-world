@@ -33,11 +33,6 @@ interface ProgressResponse {
 }
 
 const TIER_LABELS = { 1: 'Explorer', 2: 'Adventurer', 3: 'Vibe Coder' };
-const TIER_COLORS = {
-  1: 'from-yellow-400 to-orange-500',
-  2: 'from-blue-400 to-purple-500',
-  3: 'from-green-400 to-cyan-500',
-};
 
 const LEVEL_THRESHOLDS = [0, 100, 250, 500, 1000, 2000, 4000, 7000, 11000, 16000, 22000, 29000, 37000, 46000, 56000, 67000, 79000, 92000, 106000, 121000];
 const LEVEL_NAMES = ['Rookie Builder', 'Curious Coder', 'App Maker', 'Logic Legend', 'Vibe Coder', 'AI Architect', 'Code Wizard', 'Debug Master', 'System Builder', 'AI Pioneer', 'Remix Pro', 'Spec Master', 'Pattern Pro', 'Prompt Engineer', 'Flow State', 'Deep Builder', 'AI Whisperer', 'Future Maker', 'Vibe Master', 'AI Legend'];
@@ -196,15 +191,63 @@ export default function DashboardPage() {
 
   const maxSkillCount = Math.max(...Object.values(skillCounts), 1);
 
-  function missionBorderClass(type?: string) {
-    if (type === 'game-builder') return 'mission-border-game';
-    if (type === 'debug') return 'mission-border-debug';
-    if (type === 'remix') return 'mission-border-remix';
-    if (type === 'spec') return 'mission-border-spec';
-    if (type === 'judge') return 'mission-border-judge';
-    if (type === 'music') return 'mission-border-music';
-    return 'mission-border-default';
+  function missionTypeLabel(type?: string) {
+    if (type === 'game-builder') return '🎮 game';
+    if (type === 'music') return '🎵 music';
+    if (type === 'debug') return '🐛 debug';
+    if (type === 'spec') return '📋 spec';
+    if (type === 'judge') return '⚖️ judge';
+    if (type === 'remix') return '🎨 remix';
+    if (type === 'builder') return '🤖 builder';
+    if (type === 'grid') return '🤖 grid';
+    if (type === 'stars') return '⭐ stars';
+    if (type === 'logic') return '🧠 logic';
+    if (type === 'code') return '💻 code';
+    if (type === 'app') return '📱 app';
+    return '💡 quest';
   }
+
+  const DIFF_STYLES = {
+    easy: {
+      label: 'Easy Quests',
+      emoji: '🌱',
+      accent: '#1fb38f',
+      headerBg: 'rgba(31,179,143,0.08)',
+      headerBorder: 'rgba(31,179,143,0.25)',
+      cardBg: 'rgba(31,179,143,0.05)',
+      cardBorder: 'rgba(31,179,143,0.20)',
+      cardBgDone: 'rgba(31,179,143,0.10)',
+      cardBorderDone: 'rgba(31,179,143,0.35)',
+      badgeBg: 'rgba(31,179,143,0.12)',
+      badgeColor: '#0d8a6c',
+    },
+    medium: {
+      label: 'Medium Quests',
+      emoji: '⚡',
+      accent: '#D97706',
+      headerBg: 'rgba(217,119,6,0.08)',
+      headerBorder: 'rgba(217,119,6,0.25)',
+      cardBg: 'rgba(245,158,11,0.06)',
+      cardBorder: 'rgba(217,119,6,0.22)',
+      cardBgDone: 'rgba(217,119,6,0.10)',
+      cardBorderDone: 'rgba(217,119,6,0.35)',
+      badgeBg: 'rgba(217,119,6,0.12)',
+      badgeColor: '#92400E',
+    },
+    hard: {
+      label: 'Hard Quests',
+      emoji: '🔥',
+      accent: '#7C4DFF',
+      headerBg: 'rgba(124,77,255,0.08)',
+      headerBorder: 'rgba(124,77,255,0.25)',
+      cardBg: 'rgba(124,77,255,0.05)',
+      cardBorder: 'rgba(124,77,255,0.20)',
+      cardBgDone: 'rgba(124,77,255,0.10)',
+      cardBorderDone: 'rgba(124,77,255,0.35)',
+      badgeBg: 'rgba(124,77,255,0.12)',
+      badgeColor: '#5B21B6',
+    },
+  } as const;
 
   function handleEditSave(childId: string, updated: { name: string; age: number; tier: 1 | 2 | 3 }) {
     setChildren(prev => prev.map(c => c.id === childId ? { ...c, ...updated } : c));
@@ -227,7 +270,9 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="border-b border-[var(--vq-border)] px-6 py-4 flex items-center justify-between" style={{ background: 'var(--vq-surface)' }}>
         <div className="flex items-center gap-3">
-          <Image src="/logo.svg" width={28} height={28} alt="" />
+          <div style={{ width: 32, height: 32, borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}>
+            <Image src="/logo.png" width={32} height={32} alt="VibeQuest" />
+          </div>
           <span className="font-bold text-xl" style={{ color: 'var(--vq-text)' }}>VibeQuest</span>
         </div>
         <div className="flex items-center gap-4">
@@ -421,70 +466,81 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            {/* Mission grid */}
-            <h2 className="font-semibold text-xl mb-4" style={{ color: 'var(--vq-text)' }}>
+            {/* Missions — grouped by difficulty */}
+            <h2 className="font-semibold text-xl mb-5" style={{ color: 'var(--vq-text)' }}>
               {selectedChild.name}&apos;s Missions
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {missions.map((mission) => {
-                const isCompleted = completedIds.has(mission.id);
-                const missionProgress = progress.find(p => p.mission_id === mission.id);
-                const isLocked = false;
 
-                return (
-                  <div
-                    key={mission.id}
-                    className={`relative rounded-3xl p-5 transition-all ${missionBorderClass(mission.type)} ${
-                      isLocked
-                        ? 'opacity-60 cursor-default'
-                        : 'cursor-pointer hover:scale-105'
-                    }`}
-                    style={{
-                      background: isCompleted ? 'rgba(31,179,143,0.06)' : 'var(--vq-card)',
-                      border: isCompleted ? '1px solid rgba(31,179,143,0.3)' : '1px solid var(--vq-border)',
-                    }}
-                    onClick={() => !isLocked && router.push(`/play/${selectedChild.tier}/${mission.id}?childId=${selectedChild.id}`)}
-                  >
-                    {isCompleted && (
-                      <div className="absolute top-3 right-3 text-xl" style={{ color: 'var(--vq-primary)' }}>✅</div>
-                    )}
-                    {isLocked && (
-                      <div className="absolute top-3 right-3 text-xl" style={{ color: 'var(--vq-muted)' }}>🔒</div>
-                    )}
+            {(['easy', 'medium', 'hard'] as const).map(diff => {
+              const diffMissions = missions.filter(m => m.difficulty === diff);
+              if (diffMissions.length === 0) return null;
+              const ds = DIFF_STYLES[diff];
 
-                    <div className={`inline-block text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-r ${TIER_COLORS[selectedChild.tier]} text-white mb-3`}>
-                      {mission.difficulty}
+              return (
+                <div key={diff} className="mb-10">
+                  {/* Section divider */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="h-px flex-1 rounded-full" style={{ background: `${ds.accent}30` }} />
+                    <div
+                      className="flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold shrink-0"
+                      style={{ background: ds.headerBg, border: `1px solid ${ds.headerBorder}`, color: ds.accent }}
+                    >
+                      {ds.emoji} {ds.label}
+                      <span className="ml-0.5 text-xs font-normal opacity-60">({diffMissions.length})</span>
                     </div>
-                    <h3 className="font-extrabold mb-1 leading-tight" style={{ color: 'var(--vq-text)' }}>{mission.title}</h3>
-                    <p className="text-sm line-clamp-2 leading-relaxed" style={{ color: 'var(--vq-muted)' }}>{mission.story}</p>
-
-                    {mission.primarySkill && (
-                      <p className="text-xs mt-3" style={{ color: 'var(--vq-primary)' }}>
-                        {getSkillById(mission.primarySkill)?.icon} {getSkillById(mission.primarySkill)?.name}
-                        {mission.xp && <span className="ml-2" style={{ color: 'var(--vq-accent-3)' }}>+{mission.xp} XP</span>}
-                      </p>
-                    )}
-
-                    {missionProgress && !isCompleted && (
-                      <p className="text-xs mt-1" style={{ color: 'var(--vq-muted)' }}>
-                        {missionProgress.attempts} attempt{missionProgress.attempts !== 1 ? 's' : ''} so far
-                      </p>
-                    )}
-
-                    {isLocked && (
-                      <Link
-                        href="/pricing"
-                        onClick={e => e.stopPropagation()}
-                        className="mt-3 inline-block text-xs hover:underline"
-                        style={{ color: 'var(--vq-accent-3)' }}
-                      >
-                        Unlock with Pro →
-                      </Link>
-                    )}
+                    <div className="h-px flex-1 rounded-full" style={{ background: `${ds.accent}30` }} />
                   </div>
-                );
-              })}
-            </div>
+
+                  {/* Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {diffMissions.map(mission => {
+                      const isCompleted = completedIds.has(mission.id);
+                      const missionProgress = progress.find(p => p.mission_id === mission.id);
+
+                      return (
+                        <div
+                          key={mission.id}
+                          className="relative rounded-3xl p-5 cursor-pointer transition-all hover:scale-[1.03] hover:shadow-lg"
+                          style={{
+                            background: isCompleted ? ds.cardBgDone : ds.cardBg,
+                            border: `1px solid ${isCompleted ? ds.cardBorderDone : ds.cardBorder}`,
+                          }}
+                          onClick={() => router.push(`/play/${selectedChild.tier}/${mission.id}?childId=${selectedChild.id}`)}
+                        >
+                          {isCompleted && (
+                            <div className="absolute top-3 right-3 text-lg">✅</div>
+                          )}
+
+                          {/* Type badge */}
+                          <div
+                            className="inline-block text-xs font-bold px-2.5 py-1 rounded-full mb-3"
+                            style={{ background: ds.badgeBg, color: ds.badgeColor }}
+                          >
+                            {missionTypeLabel(mission.type)}
+                          </div>
+
+                          <h3 className="font-extrabold mb-1 leading-tight pr-6" style={{ color: 'var(--vq-text)' }}>{mission.title}</h3>
+                          <p className="text-sm line-clamp-2 leading-relaxed" style={{ color: 'var(--vq-muted)' }}>{mission.story}</p>
+
+                          {mission.primarySkill && (
+                            <p className="text-xs mt-3" style={{ color: ds.accent }}>
+                              {getSkillById(mission.primarySkill)?.icon} {getSkillById(mission.primarySkill)?.name}
+                              {mission.xp && <span className="ml-2" style={{ color: 'var(--vq-accent-3)' }}>+{mission.xp} XP</span>}
+                            </p>
+                          )}
+
+                          {missionProgress && !isCompleted && (
+                            <p className="text-xs mt-1" style={{ color: 'var(--vq-muted)' }}>
+                              {missionProgress.attempts} attempt{missionProgress.attempts !== 1 ? 's' : ''} so far
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
           </>
         )}
       </div>

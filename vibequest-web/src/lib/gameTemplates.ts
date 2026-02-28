@@ -1158,10 +1158,18 @@ const SETTINGS = {
   bass:   [36, 36, 38, 36, 36, 36, 38, 38, 36, 36, 38, 36, 36, 36, 38, 38],
   drums:  [1,0,0,0, 1,0,1,0, 1,0,0,1, 1,0,1,0],
   arp:    [0,1,0,1, 0,1,0,1, 0,1,0,1, 0,1,0,1],
+  voice:  [0,0,0,0, 60,0,60,0, 0,0,0,0, 62,0,62,0],
+  lead:   [0,64,0,0, 67,0,64,0, 0,65,0,0, 67,0,0,0],
+  pad:    [60,0,0,0, 0,0,0,0, 60,0,0,0, 0,0,0,0],
+  perc:   [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,1],
   drumColor: '#FF6B6B',
   synthColor: '#4ECDC4',
   bassColor: '#A855F7',
   arpColor: '#FFE66D',
+  voiceColor: '#FF69B4',
+  leadColor: '#FFA500',
+  padColor: '#6495ED',
+  percColor: '#90EE90',
 };
 
 // Listen for SETTINGS patches
@@ -1181,17 +1189,25 @@ function updateTitle() {
 const BEATS = 16;
 const ROWS = [
   { key: 'drums', emoji: '🥁', color: () => SETTINGS.drumColor },
-  { key: 'synth', emoji: '🎹', color: () => SETTINGS.synthColor },
+  { key: 'melody', emoji: '🎹', color: () => SETTINGS.synthColor },
   { key: 'bass',  emoji: '🎸', color: () => SETTINGS.bassColor },
   { key: 'arp',   emoji: '✨', color: () => SETTINGS.arpColor },
+  { key: 'voice', emoji: '🎤', color: () => SETTINGS.voiceColor },
+  { key: 'lead',  emoji: '🎺', color: () => SETTINGS.leadColor },
+  { key: 'pad',   emoji: '🎻', color: () => SETTINGS.padColor },
+  { key: 'perc',  emoji: '🪘', color: () => SETTINGS.percColor },
 ];
 
 function renderGrid() {
   const container = document.getElementById('beatGrid');
   container.innerHTML = '';
   ROWS.forEach(row => {
+    // Map ROWS display key to the instruments[] key (melody row uses 'synth' in instruments)
+    const instKey = row.key === 'melody' ? 'synth' : row.key;
+    const isActive = SETTINGS.instruments.includes(instKey);
     const rowEl = document.createElement('div');
     rowEl.className = 'instrument-row';
+    rowEl.style.opacity = isActive ? '1' : '0.3';
     const label = document.createElement('span');
     label.className = 'inst-label'; label.textContent = row.emoji;
     rowEl.appendChild(label);
@@ -1256,6 +1272,50 @@ function playNote(freq, when, dur, type, vol, audioCtx) {
   osc.start(when); osc.stop(when + dur + 0.05);
 }
 
+function playVoiceNote(freq, when, dur, ctx) {
+  // Choir "aah": 3 slightly detuned sawtooth oscillators through a formant bandpass filter
+  [-8, 0, 8].forEach(detune => {
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth'; osc.frequency.value = freq; osc.detune.value = detune;
+    const filt = ctx.createBiquadFilter();
+    filt.type = 'bandpass'; filt.frequency.value = 800; filt.Q.value = 3;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0, when);
+    gain.gain.linearRampToValueAtTime(0.07, when + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, when + dur);
+    osc.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
+    osc.start(when); osc.stop(when + dur + 0.1);
+  });
+}
+
+function playPadNote(freq, when, dur, ctx) {
+  // Soft strings: sawtooth through lowpass, slow attack
+  const osc = ctx.createOscillator();
+  osc.type = 'sawtooth'; osc.frequency.value = freq;
+  const filt = ctx.createBiquadFilter();
+  filt.type = 'lowpass'; filt.frequency.value = 1400;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, when);
+  gain.gain.linearRampToValueAtTime(0.1, when + 0.4);
+  gain.gain.exponentialRampToValueAtTime(0.001, when + dur);
+  osc.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
+  osc.start(when); osc.stop(when + dur + 0.1);
+}
+
+function playPercHit(when, ctx) {
+  // Clap: noise burst through highpass filter
+  const buf = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 3);
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const filt = ctx.createBiquadFilter(); filt.type = 'highpass'; filt.frequency.value = 1500;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.4, when);
+  gain.gain.exponentialRampToValueAtTime(0.001, when + 0.06);
+  src.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
+  src.start(when); src.stop(when + 0.1);
+}
+
 function scheduleBeat(b, time) {
   const secPerBeat = 60 / SETTINGS.bpm / 4;
   const mel = SETTINGS.melody;
@@ -1274,6 +1334,21 @@ function scheduleBeat(b, time) {
     const arpNote = mel ? mel[b % mel.length] + 12 : 72;
     playNote(midiToFreq(arpNote), time, secPerBeat * 0.4, 'triangle', 0.1, audioCtx);
   }
+  // ── New instruments ──────────────────────────────────────────────
+  const voice = SETTINGS.voice;
+  if (active.includes('voice') && voice && voice[b % voice.length] > 0) {
+    playVoiceNote(midiToFreq(voice[b % voice.length]), time, secPerBeat * 1.2, audioCtx);
+  }
+  const lead = SETTINGS.lead;
+  if (active.includes('lead') && lead && lead[b % lead.length] > 0) {
+    playNote(midiToFreq(lead[b % lead.length]), time, secPerBeat * 0.7, 'sawtooth', 0.12, audioCtx);
+  }
+  const pad = SETTINGS.pad;
+  if (active.includes('pad') && b % 4 === 0 && pad && pad[b % pad.length] > 0) {
+    playPadNote(midiToFreq(pad[b % pad.length]), time, secPerBeat * 7, audioCtx);
+  }
+  const perc = SETTINGS.perc;
+  if (active.includes('perc') && perc && perc[b % perc.length]) playPercHit(time, audioCtx);
 }
 
 function scheduleLoop() {
@@ -1425,7 +1500,7 @@ export const MUSIC_TEMPLATE: GameTemplate = {
   emoji: '🎵',
   description: 'Compose your own song with beats, melody, bass, and arpeggios!',
   baseHtml: MUSIC_HTML,
-  customizableAreas: ['BPM / Tempo', 'Melody notes', 'Bass line', 'Drum pattern', 'Instruments', 'Title'],
+  customizableAreas: ['BPM / Tempo', 'Melody notes', 'Bass line', 'Drum pattern', 'Voice', 'Lead instrument', 'Strings pad', 'Extra percussion', 'Title'],
 };
 
 export function getGameTemplate(id: string): GameTemplate | undefined {

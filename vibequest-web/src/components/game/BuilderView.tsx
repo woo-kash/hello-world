@@ -249,11 +249,12 @@ export default function BuilderView({ mission, childId, childName, tier }: Props
         </div>
 
         {/* Right: Live Preview */}
-        <div className="w-3/5 p-4 flex flex-col">
+        <div className="w-3/5 p-4 flex flex-col min-h-0">
           <LivePreview
             code={currentHtml}
             childName={childName}
             loading={loading}
+            className="flex-1 min-h-0"
           />
         </div>
       </div>

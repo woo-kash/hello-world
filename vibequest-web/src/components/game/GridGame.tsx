@@ -12,6 +12,7 @@ interface Props {
   robotDir: 'right' | 'down' | 'left' | 'up';
   frames: AnimationFrame[];
   theme?: 'space' | 'forest' | 'pirate';
+  character?: string;
 }
 
 const CELL_SIZE = 64;
@@ -190,46 +191,71 @@ function Fireworks({ x, y }: { x: number; y: number }) {
 }
 
 // ─── Robot component ────────────────────────────────────────────────
-function Robot({ robot, isMoving, atGoal }: { robot: RobotState; isMoving: boolean; atGoal: boolean }) {
+// Three-layer structure keeps CSS animation and rotation on separate divs
+// so keyframe `transform` values never override the rotation.
+function Robot({ robot, isMoving, atGoal, character }: { robot: RobotState; isMoving: boolean; atGoal: boolean; character?: string }) {
   const rotate = DIR_ANGLES[robot.dir];
   return (
+    // Outer: position only — transitions left/top smoothly
     <div
-      className={`absolute flex items-center justify-center transition-all duration-300 ${isMoving ? 'animate-robot-walk' : atGoal ? '' : 'animate-idle-bob'}`}
+      className="absolute"
       style={{
         width: CELL_SIZE,
         height: CELL_SIZE,
         left: robot.col * CELL_SIZE,
         top: robot.row * CELL_SIZE,
-        transform: `rotate(${rotate}deg)`,
+        transition: 'left 0.3s ease, top 0.3s ease',
         zIndex: 10,
       }}
     >
-      <svg width={48} height={48} viewBox="0 0 48 48">
-        <ellipse cx={24} cy={44} rx={14} ry={3} fill="rgba(99,102,241,0.3)" />
-        <rect x={8} y={14} width={32} height={26} rx={8} fill="#6366f1" />
-        <rect x={10} y={16} width={28} height={22} rx={6} fill="#818cf8" opacity={0.3} />
-        <rect x={12} y={4} width={24} height={16} rx={6} fill="#818cf8" />
-        <line x1={24} y1={4} x2={24} y2={0} stroke="#c7d2fe" strokeWidth={2} />
-        <circle cx={24} cy={0} r={3} fill="#fbbf24">
-          <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite" />
-        </circle>
-        <circle cx={17} cy={12} r={4} fill="#1e1b4b" />
-        <circle cx={31} cy={12} r={4} fill="#1e1b4b" />
-        <circle cx={18} cy={11} r={1.5} fill="white" />
-        <circle cx={32} cy={11} r={1.5} fill="white" />
-        {atGoal && <path d="M17 17 Q24 23 31 17" fill="none" stroke="#fbbf24" strokeWidth={2} strokeLinecap="round" />}
-        <polygon points="24,40 18,48 30,48" fill="#fbbf24" opacity={0.8} />
-        <rect x={4} y={18} width={6} height={14} rx={3} fill="#6366f1" />
-        <rect x={38} y={18} width={6} height={14} rx={3} fill="#6366f1" />
-      </svg>
+      {/* Middle: rotation only — never receives animation keyframes */}
+      <div
+        className="w-full h-full flex items-center justify-center"
+        style={{ transform: `rotate(${rotate}deg)`, transition: 'transform 0.25s ease' }}
+      >
+        {/* Inner: animation (translateY/scale only) */}
+        <div className={`flex items-center justify-center ${isMoving ? 'animate-robot-walk' : atGoal ? '' : 'animate-idle-bob'}`}>
+          {character ? (
+            <span
+              style={{
+                fontSize: 36,
+                filter: atGoal ? 'drop-shadow(0 0 10px gold)' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+                display: 'block',
+                lineHeight: 1,
+              }}
+            >
+              {character}
+            </span>
+          ) : (
+            <svg width={48} height={48} viewBox="0 0 48 48">
+              <ellipse cx={24} cy={44} rx={14} ry={3} fill="rgba(99,102,241,0.3)" />
+              <rect x={8} y={14} width={32} height={26} rx={8} fill="#6366f1" />
+              <rect x={10} y={16} width={28} height={22} rx={6} fill="#818cf8" opacity={0.3} />
+              <rect x={12} y={4} width={24} height={16} rx={6} fill="#818cf8" />
+              <line x1={24} y1={4} x2={24} y2={0} stroke="#c7d2fe" strokeWidth={2} />
+              <circle cx={24} cy={0} r={3} fill="#fbbf24">
+                <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite" />
+              </circle>
+              <circle cx={17} cy={12} r={4} fill="#1e1b4b" />
+              <circle cx={31} cy={12} r={4} fill="#1e1b4b" />
+              <circle cx={18} cy={11} r={1.5} fill="white" />
+              <circle cx={32} cy={11} r={1.5} fill="white" />
+              {atGoal && <path d="M17 17 Q24 23 31 17" fill="none" stroke="#fbbf24" strokeWidth={2} strokeLinecap="round" />}
+              <polygon points="24,40 18,48 30,48" fill="#fbbf24" opacity={0.8} />
+              <rect x={4} y={18} width={6} height={14} rx={3} fill="#6366f1" />
+              <rect x={38} y={18} width={6} height={14} rx={3} fill="#6366f1" />
+            </svg>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
 
 // ─── Main GridGame ──────────────────────────────────────────────────
-export default function GridGame({ grid, cols, rows, goal, robotStart, robotDir, frames, theme = 'space' }: Props) {
+export default function GridGame({ grid, cols, rows, goal, robotStart, robotDir, frames, theme = 'space', character }: Props) {
   const [frameIdx, setFrameIdx] = useState(0);
-  const [message, setMessage] = useState('Ready! 🤖');
+  const [message, setMessage] = useState(character ? `Ready! ${character}` : 'Ready! 🤖');
   const [isMoving, setIsMoving] = useState(false);
   const [dustParticles, setDustParticles] = useState<{ x: number; y: number; id: number; key: number }[]>([]);
   const [showFireworks, setShowFireworks] = useState(false);
@@ -253,7 +279,7 @@ export default function GridGame({ grid, cols, rows, goal, robotStart, robotDir,
   useEffect(() => {
     if (frames.length === 0) {
       setFrameIdx(0);
-      setMessage('Ready! 🤖');
+      setMessage(character ? `Ready! ${character}` : 'Ready! 🤖');
       setShowFireworks(false);
       return;
     }
@@ -344,7 +370,7 @@ export default function GridGame({ grid, cols, rows, goal, robotStart, robotDir,
             <DustParticle key={p.key} x={p.x} y={p.y} id={p.id} />
           ))}
 
-          <Robot robot={currentRobot} isMoving={isMoving} atGoal={atGoal} />
+          <Robot robot={currentRobot} isMoving={isMoving} atGoal={atGoal} character={character} />
 
           {showFireworks && (
             <Fireworks x={currentRobot.col * CELL_SIZE} y={currentRobot.row * CELL_SIZE} />

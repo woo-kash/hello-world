@@ -97,7 +97,11 @@ export default function OnboardingPage() {
     return (
       <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--vq-bg)' }}>
         <div className="max-w-2xl w-full text-center">
-          <div className="text-7xl mb-4">✨</div>
+          <div className="flex justify-center mb-4">
+            <div style={{ width: 96, height: 96, borderRadius: 20, overflow: 'hidden' }}>
+              <img src="/logo.png" width={96} height={96} alt="VibeQuest" />
+            </div>
+          </div>
           <h1 className="text-4xl font-bold mb-3" style={{ color: 'var(--vq-text)' }}>Welcome to VibeQuest!</h1>
           <p className="text-lg mb-10" style={{ color: 'var(--vq-muted)' }}>
             Pick your child&apos;s tier to get started. You can change it anytime.
