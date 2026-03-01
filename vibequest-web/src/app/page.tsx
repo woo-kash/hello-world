@@ -61,30 +61,30 @@ const TIERS = [
     name: 'Explorers',
     age: 'Ages 6–8',
     color: 'from-yellow-400 to-orange-500',
-    builds: ['A robot maze game', 'A star lighting machine', 'Their own platformer'],
+    builds: ['Build Snake Attack, Flappy & Alien Invasion', 'Compose Space Jam beats & Jungle rhythms', 'Animate a doodle scene'],
   },
   {
     emoji: '🗺️',
     name: 'Adventurers',
     age: 'Ages 9–12',
     color: 'from-blue-400 to-purple-500',
-    builds: ['A working calculator', 'A quiz game', 'A custom space shooter'],
+    builds: ['Remix a calculator, build a chatbot', 'Design a game with custom physics', 'Animate a multi-element scene'],
   },
   {
     emoji: '💻',
     name: 'Vibe Coders',
     age: 'Ages 13–16',
     color: 'from-green-400 to-cyan-500',
-    builds: ['A full landing page', 'An AI chatbot', 'A complete game studio'],
+    builds: ['Spec a messenger, ship a full game studio', 'Build an AI detector or chatbot app', 'Animate with physics & particle systems'],
   },
 ];
 
 const MISSION_TYPES = [
-  { icon: '🎮', label: 'Game Builder', color: '#F97316', desc: 'Design and build playable games' },
-  { icon: '🐛', label: 'Debug It', color: '#EF4444', desc: 'Find and squash real bugs' },
-  { icon: '🎨', label: 'Remix Studio', color: '#EC4899', desc: 'Transform existing apps' },
-  { icon: '📋', label: 'Spec Writer', color: '#3B82F6', desc: 'Describe before you build' },
-  { icon: '🎵', label: 'Music Builder', color: '#22C55E', desc: 'Compose beats with AI' },
+  { icon: '🎮', label: 'Game Builder', color: '#F97316', desc: 'Customise and ship your own playable games' },
+  { icon: '🖼️', label: 'Animator Studio', color: '#7C4DFF', desc: 'Draw a scene, describe the magic, watch it move' },
+  { icon: '🎵', label: 'Music Builder', color: '#22C55E', desc: 'Compose beats, melodies and full soundscapes' },
+  { icon: '🐛', label: 'Debug & Remix', color: '#EF4444', desc: 'Squash bugs and transform apps into your own' },
+  { icon: '📋', label: 'Build & Spec', color: '#3B82F6', desc: 'Describe your app in English, then watch AI build it' },
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -306,6 +306,11 @@ export default function HomePage() {
           </div>
         </div>
         <h2 className="text-4xl font-black mb-4" style={{ color: 'var(--vq-text)' }}>Your child&apos;s AI superpower starts here</h2>
+        {/* Season banner */}
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6" style={{ background: 'rgba(31,179,143,0.10)', border: '1px solid rgba(31,179,143,0.30)', color: 'var(--vq-primary)' }}>
+          <span>🌱</span>
+          <span>Spring 2026 Season live — new challenge every 2 days. All kids, same day.</span>
+        </div>
         <p className="mb-8 text-lg" style={{ color: 'var(--vq-muted)' }}>
           3 free missions. No credit card. Your child could complete their first mission in 5 minutes.
         </p>

@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import Image from 'next/image';
-import { getMissionsByTier } from '@/lib/missions';
+import { getSeasonMissions } from '@/lib/missions';
+import { CURRENT_SEASON, getSeasonDayToday, isMissionUnlocked, daysUntilUnlock } from '@/lib/seasons';
 import { SKILLS, SKILL_CATEGORIES, getSkillById } from '@/lib/skills';
 import { AvatarDisplay } from '@/components/ui/AvatarDisplay';
 
@@ -178,8 +179,9 @@ export default function DashboardPage() {
     );
   }
 
-  const missions = selectedChild ? getMissionsByTier(selectedChild.tier) : [];
+  const seasonMissions = selectedChild ? getSeasonMissions(selectedChild.tier) : [];
   const completedIds = new Set(progress.filter(p => p.completed).map(p => p.mission_id));
+  const todayDay = getSeasonDayToday();
   const badges = progress.filter(p => p.badge).map(p => p.badge!);
   const levelInfo = getLevelProgress(totalXp);
 
@@ -198,56 +200,13 @@ export default function DashboardPage() {
     if (type === 'spec') return '📋 spec';
     if (type === 'judge') return '⚖️ judge';
     if (type === 'remix') return '🎨 remix';
-    if (type === 'builder') return '🤖 builder';
-    if (type === 'grid') return '🤖 grid';
-    if (type === 'stars') return '⭐ stars';
-    if (type === 'logic') return '🧠 logic';
+    if (type === 'builder') return '💬 builder';
+    if (type === 'grid') return '🕹️ maze';
     if (type === 'code') return '💻 code';
     if (type === 'app') return '📱 app';
+    if (type === 'animate') return '🖼️ animate';
     return '💡 quest';
   }
-
-  const DIFF_STYLES = {
-    easy: {
-      label: 'Easy Quests',
-      emoji: '🌱',
-      accent: '#1fb38f',
-      headerBg: 'rgba(31,179,143,0.08)',
-      headerBorder: 'rgba(31,179,143,0.25)',
-      cardBg: 'rgba(31,179,143,0.05)',
-      cardBorder: 'rgba(31,179,143,0.20)',
-      cardBgDone: 'rgba(31,179,143,0.10)',
-      cardBorderDone: 'rgba(31,179,143,0.35)',
-      badgeBg: 'rgba(31,179,143,0.12)',
-      badgeColor: '#0d8a6c',
-    },
-    medium: {
-      label: 'Medium Quests',
-      emoji: '⚡',
-      accent: '#D97706',
-      headerBg: 'rgba(217,119,6,0.08)',
-      headerBorder: 'rgba(217,119,6,0.25)',
-      cardBg: 'rgba(245,158,11,0.06)',
-      cardBorder: 'rgba(217,119,6,0.22)',
-      cardBgDone: 'rgba(217,119,6,0.10)',
-      cardBorderDone: 'rgba(217,119,6,0.35)',
-      badgeBg: 'rgba(217,119,6,0.12)',
-      badgeColor: '#92400E',
-    },
-    hard: {
-      label: 'Hard Quests',
-      emoji: '🔥',
-      accent: '#7C4DFF',
-      headerBg: 'rgba(124,77,255,0.08)',
-      headerBorder: 'rgba(124,77,255,0.25)',
-      cardBg: 'rgba(124,77,255,0.05)',
-      cardBorder: 'rgba(124,77,255,0.20)',
-      cardBgDone: 'rgba(124,77,255,0.10)',
-      cardBorderDone: 'rgba(124,77,255,0.35)',
-      badgeBg: 'rgba(124,77,255,0.12)',
-      badgeColor: '#5B21B6',
-    },
-  } as const;
 
   function handleEditSave(childId: string, updated: { name: string; age: number; tier: 1 | 2 | 3 }) {
     setChildren(prev => prev.map(c => c.id === childId ? { ...c, ...updated } : c));
@@ -351,7 +310,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-3 gap-4 mb-6">
               {[
                 { label: 'Missions Done', value: completedIds.size, emoji: '✅', accent: 'var(--vq-primary)' },
-                { label: 'Total Missions', value: missions.length, emoji: '🗺️', accent: 'var(--vq-purple)' },
+                { label: 'Season Quests', value: seasonMissions.length, emoji: '🗺️', accent: 'var(--vq-purple)' },
                 { label: 'Badges Earned', value: badges.length, emoji: '🏅', accent: 'var(--vq-accent-3)' },
               ].map(({ label, value, emoji, accent }) => (
                 <div key={label} className="rounded-3xl p-5 text-center" style={{ background: 'var(--vq-card)', border: '1px solid var(--vq-border)' }}>
@@ -466,81 +425,138 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            {/* Missions — grouped by difficulty */}
-            <h2 className="font-semibold text-xl mb-5" style={{ color: 'var(--vq-text)' }}>
-              {selectedChild.name}&apos;s Missions
-            </h2>
+            {/* Season calendar */}
+            <div className="mb-6">
+              {/* Season header */}
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="font-semibold text-xl" style={{ color: 'var(--vq-text)' }}>
+                  {CURRENT_SEASON.emoji} {CURRENT_SEASON.name} Season
+                </h2>
+                <span className="text-sm px-3 py-1 rounded-full font-medium" style={{ background: 'rgba(31,179,143,0.10)', color: 'var(--vq-primary)', border: '1px solid rgba(31,179,143,0.25)' }}>
+                  Day {Math.min(todayDay, 29)} of 29
+                </span>
+              </div>
 
-            {(['easy', 'medium', 'hard'] as const).map(diff => {
-              const diffMissions = missions.filter(m => m.difficulty === diff);
-              if (diffMissions.length === 0) return null;
-              const ds = DIFF_STYLES[diff];
+              {/* Calendar rows */}
+              <div className="space-y-2">
+                {seasonMissions.map(mission => {
+                  const day = mission.seasonDay ?? 1;
+                  const unlocked = isMissionUnlocked(day);
+                  const isToday = unlocked && (day === todayDay || (day <= todayDay && (day + 1) > todayDay));
+                  const isCompleted = completedIds.has(mission.id);
+                  const waitDays = daysUntilUnlock(day);
+                  const missionProgress = progress.find(p => p.mission_id === mission.id);
 
-              return (
-                <div key={diff} className="mb-10">
-                  {/* Section divider */}
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="h-px flex-1 rounded-full" style={{ background: `${ds.accent}30` }} />
-                    <div
-                      className="flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold shrink-0"
-                      style={{ background: ds.headerBg, border: `1px solid ${ds.headerBorder}`, color: ds.accent }}
-                    >
-                      {ds.emoji} {ds.label}
-                      <span className="ml-0.5 text-xs font-normal opacity-60">({diffMissions.length})</span>
-                    </div>
-                    <div className="h-px flex-1 rounded-full" style={{ background: `${ds.accent}30` }} />
-                  </div>
+                  // "Today's" mission is the latest unlocked one not completed, or highest unlocked day
+                  const isTodayHighlight = unlocked && !isCompleted &&
+                    !seasonMissions.some(m =>
+                      m.seasonDay !== undefined &&
+                      m.seasonDay < day &&
+                      m.seasonDay !== undefined &&
+                      isMissionUnlocked(m.seasonDay) &&
+                      !completedIds.has(m.id)
+                    );
 
-                  {/* Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {diffMissions.map(mission => {
-                      const isCompleted = completedIds.has(mission.id);
-                      const missionProgress = progress.find(p => p.mission_id === mission.id);
-
-                      return (
-                        <div
-                          key={mission.id}
-                          className="relative rounded-3xl p-5 cursor-pointer transition-all hover:scale-[1.03] hover:shadow-lg"
-                          style={{
-                            background: isCompleted ? ds.cardBgDone : ds.cardBg,
-                            border: `1px solid ${isCompleted ? ds.cardBorderDone : ds.cardBorder}`,
-                          }}
-                          onClick={() => router.push(`/play/${selectedChild.tier}/${mission.id}?childId=${selectedChild.id}`)}
-                        >
-                          {isCompleted && (
-                            <div className="absolute top-3 right-3 text-lg">✅</div>
-                          )}
-
-                          {/* Type badge */}
-                          <div
-                            className="inline-block text-xs font-bold px-2.5 py-1 rounded-full mb-3"
-                            style={{ background: ds.badgeBg, color: ds.badgeColor }}
-                          >
-                            {missionTypeLabel(mission.type)}
+                  if (isTodayHighlight) {
+                    // "Today's Challenge" row — highlighted
+                    return (
+                      <div
+                        key={mission.id}
+                        className="rounded-2xl p-4 cursor-pointer transition-all hover:shadow-md"
+                        style={{ background: 'rgba(31,179,143,0.10)', border: '2px solid var(--vq-primary)' }}
+                        onClick={() => router.push(`/play/${selectedChild!.tier}/${mission.id}?childId=${selectedChild!.id}`)}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="flex-shrink-0 w-12 h-12 rounded-xl flex flex-col items-center justify-center text-center" style={{ background: 'rgba(31,179,143,0.18)' }}>
+                            <span className="text-xs font-bold" style={{ color: 'var(--vq-primary)' }}>Day</span>
+                            <span className="text-lg font-extrabold" style={{ color: 'var(--vq-primary)' }}>{day}</span>
                           </div>
-
-                          <h3 className="font-extrabold mb-1 leading-tight pr-6" style={{ color: 'var(--vq-text)' }}>{mission.title}</h3>
-                          <p className="text-sm line-clamp-2 leading-relaxed" style={{ color: 'var(--vq-muted)' }}>{mission.story}</p>
-
-                          {mission.primarySkill && (
-                            <p className="text-xs mt-3" style={{ color: ds.accent }}>
-                              {getSkillById(mission.primarySkill)?.icon} {getSkillById(mission.primarySkill)?.name}
-                              {mission.xp && <span className="ml-2" style={{ color: 'var(--vq-accent-3)' }}>+{mission.xp} XP</span>}
-                            </p>
-                          )}
-
-                          {missionProgress && !isCompleted && (
-                            <p className="text-xs mt-1" style={{ color: 'var(--vq-muted)' }}>
-                              {missionProgress.attempts} attempt{missionProgress.attempts !== 1 ? 's' : ''} so far
-                            </p>
-                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span className="text-xs font-bold px-2 py-0.5 rounded-full animate-pulse" style={{ background: 'var(--vq-primary)', color: 'white' }}>
+                                TODAY
+                              </span>
+                              <span className="text-xs" style={{ color: 'var(--vq-muted)' }}>{missionTypeLabel(mission.type)}</span>
+                            </div>
+                            <h3 className="font-bold leading-tight" style={{ color: 'var(--vq-text)' }}>{mission.title}</h3>
+                            <p className="text-xs mt-0.5 line-clamp-1" style={{ color: 'var(--vq-muted)' }}>{mission.challenge}</p>
+                          </div>
+                          <button
+                            className="flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-colors"
+                            style={{ background: 'var(--vq-primary)' }}
+                          >
+                            Play Now →
+                          </button>
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
+                      </div>
+                    );
+                  }
+
+                  if (isCompleted) {
+                    // Completed row
+                    return (
+                      <div
+                        key={mission.id}
+                        className="rounded-2xl px-4 py-3 flex items-center gap-4 cursor-pointer transition-all hover:bg-[rgba(31,179,143,0.05)]"
+                        style={{ border: '1px solid rgba(31,179,143,0.20)', background: 'rgba(31,179,143,0.04)' }}
+                        onClick={() => router.push(`/play/${selectedChild!.tier}/${mission.id}?childId=${selectedChild!.id}`)}
+                      >
+                        <div className="w-8 text-center text-xs font-bold" style={{ color: 'var(--vq-muted)' }}>{day}</div>
+                        <span className="text-lg">✅</span>
+                        <div className="flex-1 min-w-0">
+                          <span className="font-semibold text-sm" style={{ color: 'var(--vq-text)' }}>{mission.title}</span>
+                          {mission.xp && <span className="ml-2 text-xs" style={{ color: 'var(--vq-accent-3)' }}>+{mission.xp} XP</span>}
+                        </div>
+                        <button className="text-xs px-3 py-1.5 rounded-lg font-medium transition-colors hover:bg-[rgba(31,179,143,0.12)]" style={{ color: 'var(--vq-primary)', border: '1px solid rgba(31,179,143,0.25)' }}>
+                          Replay
+                        </button>
+                      </div>
+                    );
+                  }
+
+                  if (unlocked) {
+                    // Unlocked but not completed
+                    return (
+                      <div
+                        key={mission.id}
+                        className="rounded-2xl px-4 py-3 flex items-center gap-4 cursor-pointer transition-all hover:shadow-sm"
+                        style={{ border: '1px solid var(--vq-border)', background: 'var(--vq-card)' }}
+                        onClick={() => router.push(`/play/${selectedChild!.tier}/${mission.id}?childId=${selectedChild!.id}`)}
+                      >
+                        <div className="w-8 text-center text-xs font-bold" style={{ color: 'var(--vq-muted)' }}>{day}</div>
+                        <div className="w-8 text-center text-lg">🎯</div>
+                        <div className="flex-1 min-w-0">
+                          <span className="font-semibold text-sm" style={{ color: 'var(--vq-text)' }}>{mission.title}</span>
+                          <span className="ml-2 text-xs" style={{ color: 'var(--vq-muted)' }}>{missionTypeLabel(mission.type)}</span>
+                          {missionProgress && <span className="ml-2 text-xs" style={{ color: 'var(--vq-muted)' }}>· {missionProgress.attempts} attempt{missionProgress.attempts !== 1 ? 's' : ''}</span>}
+                        </div>
+                        <button className="text-xs px-3 py-1.5 rounded-lg font-medium transition-colors" style={{ color: 'var(--vq-text)', border: '1px solid var(--vq-border)' }}>
+                          Play
+                        </button>
+                      </div>
+                    );
+                  }
+
+                  // Locked
+                  return (
+                    <div
+                      key={mission.id}
+                      className="rounded-2xl px-4 py-3 flex items-center gap-4 opacity-50"
+                      style={{ border: '1px solid var(--vq-border)', background: 'var(--vq-bg)' }}
+                    >
+                      <div className="w-8 text-center text-xs font-bold" style={{ color: 'var(--vq-muted)' }}>{day}</div>
+                      <div className="w-8 text-center text-lg">🔒</div>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-semibold text-sm" style={{ color: 'var(--vq-muted)' }}>{mission.title}</span>
+                      </div>
+                      <span className="text-xs" style={{ color: 'var(--vq-muted)' }}>
+                        {waitDays === 1 ? 'Unlocks tomorrow' : `Unlocks in ${waitDays} days`}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </>
         )}
       </div>

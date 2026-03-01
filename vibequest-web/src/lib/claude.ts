@@ -223,7 +223,7 @@ Always respond with valid JSON only. No markdown fences. No extra text.`;
 
   const message = await getClient().messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 4096,
+    max_tokens: 8192,
     system: systemPrompt,
     messages,
   });
@@ -637,4 +637,58 @@ Return valid JSON: { "correct": true, "feedback": "encouraging response", "expla
   });
 
   return parseJSON((msg.content[0] as { text: string }).text);
+}
+
+/**
+ * Animator Studio: take an SVG scene the kid drew + their description
+ * and return a fully animated HTML page.
+ */
+export interface AnimatorResult {
+  html: string;
+  explanation: string;
+}
+
+const ANIMATOR_TIER_PROMPTS: Record<Tier, string> = {
+  1: 'Keep the animations simple and joyful: 1-2 elements moving, gentle CSS transitions, no more than 3 seconds per loop.',
+  2: 'Use requestAnimationFrame loops for fluid motion. Coordinate multiple elements. Vary speeds and directions.',
+  3: 'Use physics-inspired techniques: velocity, gravity, bounce, particle systems. Create sophisticated, coordinated animations.',
+};
+
+export async function animatorIterate(
+  svgContent: string,
+  canvasDataUrl: string,
+  description: string,
+  tier: Tier
+): Promise<AnimatorResult> {
+  const systemPrompt = `You are an animation wizard for kids. You receive an SVG drawing a child made and their description of how it should move.
+
+Return a COMPLETE self-contained HTML page that embeds the SVG drawing and brings it to life using CSS animations and/or requestAnimationFrame.
+
+RULES:
+- Keep the original SVG shapes recognisable — do not redesign them
+- Animate exactly what the child described, and add subtle ambient animations to everything else
+- The HTML must be 100% self-contained (no external imports)
+- Use a pleasant background that complements the drawing
+- ${ANIMATOR_TIER_PROMPTS[tier]}
+
+Always respond with valid JSON only. No markdown fences. No extra text.
+{ "html": "<!DOCTYPE html>...", "explanation": "friendly one-sentence description of what you animated" }`;
+
+  const userContent = `Here is the child's SVG drawing:\n\n${svgContent}\n\n${canvasDataUrl ? 'They also drew freehand strokes on a canvas layer above the shapes.\n\n' : ''}The child wants: "${description}"\n\nPlease animate this scene!`;
+
+  const msg = await getClient().messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 8192,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: userContent }],
+  });
+
+  const raw = (msg.content[0] as { text: string }).text;
+  try {
+    return parseJSON(raw);
+  } catch {
+    const htmlMatch = raw.match(/<!DOCTYPE html>[\s\S]*/i);
+    if (htmlMatch) return { html: htmlMatch[0], explanation: 'Your drawing has been animated!' };
+    return { html: raw, explanation: 'Your drawing has been animated!' };
+  }
 }

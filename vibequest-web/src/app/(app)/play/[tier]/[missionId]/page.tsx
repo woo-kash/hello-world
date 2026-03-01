@@ -15,6 +15,7 @@ import VoiceInput from '@/components/ui/VoiceInput';
 import BuilderView from '@/components/game/BuilderView';
 import GameBuilder from '@/components/game/GameBuilder';
 import MusicBuilder from '@/components/game/MusicBuilder';
+import AnimatorView from '@/components/game/AnimatorView';
 import DebugView from '@/components/game/DebugView';
 import RemixView from '@/components/game/RemixView';
 import SpecView from '@/components/game/SpecView';
@@ -99,6 +100,10 @@ export default function PlayPage() {
     return <MusicBuilder mission={mission} childId={childId} tier={tier} />;
   }
 
+  if (mission.type === 'animate') {
+    return <AnimatorView mission={mission} childId={childId} tier={tier} />;
+  }
+
   const difficulty = mission!.difficulty as 'easy' | 'medium' | 'hard';
 
   async function handleSubmit(e: React.FormEvent) {
@@ -154,8 +159,8 @@ export default function PlayPage() {
         gridSuccess = animFrames.length > 0 && (animFrames[animFrames.length - 1].atGoal ?? false);
       }
 
-      // Run scene animation for logic missions with sceneConfig
-      if (m.type === 'logic' && m.sceneConfig && data.logicBlocks) {
+      // Legacy: logic missions with sceneConfig (not used in Spring 2026 season)
+      if ((m.type as string) === 'logic' && m.sceneConfig && data.logicBlocks) {
         const scenes = executeScene(m.sceneConfig.sceneId, data.logicBlocks);
         setSceneFrames(scenes);
       }
@@ -190,6 +195,7 @@ export default function PlayPage() {
 
   // Determine if this mission uses LivePreview (code/app types)
   const usesLivePreview = mission.type === 'code' || mission.type === 'app';
+  // Legacy: stars/logic types no longer used in Spring 2026 season
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--vq-bg)' }}>
@@ -319,8 +325,8 @@ export default function PlayPage() {
             />
           )}
 
-          {/* Stars game */}
-          {mission.type === 'stars' && (
+          {/* Legacy: Stars game (not in Spring 2026 season) */}
+          {(mission.type as string) === 'stars' && (
             <StarsGame
               totalStars={5}
               success={result?.success ?? false}
@@ -328,8 +334,8 @@ export default function PlayPage() {
             />
           )}
 
-          {/* Logic missions: SceneGame if sceneConfig, else fallback */}
-          {mission.type === 'logic' && mission.sceneConfig && (
+          {/* Legacy: Logic missions with SceneGame (not in Spring 2026 season) */}
+          {(mission.type as string) === 'logic' && mission.sceneConfig && (
             <SceneGame
               sceneConfig={mission.sceneConfig}
               frames={sceneFrames}

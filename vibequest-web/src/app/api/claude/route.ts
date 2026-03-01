@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   translateToCode, generateMission, generateLessonSummary, builderIterate, gameBuilderIterate,
   debugIterate, remixIterate, evaluateSpec, buildFromSpec, generateVariants, evaluateJudgement,
-  musicIterate, generateAvatar,
+  musicIterate, generateAvatar, animatorIterate,
   Difficulty, Tier
 } from '@/lib/claude';
 import { containsInappropriate, CONTENT_BLOCKED_MSG } from '@/lib/contentFilter';
@@ -50,7 +50,8 @@ export async function POST(req: NextRequest) {
       case 'translate':      return body.userDescription ?? '';
       case 'debug_check':
       case 'remix_iterate':
-      case 'music_iterate':  return body.kidDescription ?? '';
+      case 'music_iterate':
+      case 'animate':        return body.kidDescription ?? '';
       case 'spec_evaluate':
       case 'spec_build':     return body.spec ?? '';
       case 'judge_generate': return body.missionSpec ?? '';
@@ -160,6 +161,12 @@ export async function POST(req: NextRequest) {
     if (action === 'generate_avatar') {
       const { description } = body;
       const result = await generateAvatar(description);
+      return NextResponse.json(result);
+    }
+
+    if (action === 'animate') {
+      const { svgContent, canvasDataUrl, kidDescription, tier } = body;
+      const result = await animatorIterate(svgContent ?? '', canvasDataUrl ?? '', kidDescription ?? '', tier as Tier);
       return NextResponse.json(result);
     }
 

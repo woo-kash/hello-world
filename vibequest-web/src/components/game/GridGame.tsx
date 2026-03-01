@@ -190,10 +190,42 @@ function Fireworks({ x, y }: { x: number; y: number }) {
   );
 }
 
+// ─── Pac-Man component ──────────────────────────────────────────────
+// Theme-coloured Pac-Man; mouth opens when moving.
+function PacMan({ isMoving, atGoal, theme }: { isMoving: boolean; atGoal: boolean; theme: 'space' | 'forest' | 'pirate' }) {
+  const fill = theme === 'space' ? '#818cf8' : theme === 'forest' ? '#86efac' : '#FFD700';
+  const mouthAngle = isMoving ? 32 : 6; // degrees — wider when moving
+  const startRad = (mouthAngle * Math.PI) / 180;
+  const mx1 = 24 + 20 * Math.cos(-startRad);
+  const my1 = 24 + 20 * Math.sin(-startRad);
+  const mx2 = 24 + 20 * Math.cos(startRad);
+  const my2 = 24 + 20 * Math.sin(startRad);
+  return (
+    <svg width={48} height={48} viewBox="0 0 48 48">
+      {/* Shadow */}
+      <ellipse cx={24} cy={45} rx={12} ry={2.5} fill="rgba(0,0,0,0.25)" />
+      {/* Body */}
+      <path
+        d={`M 24 24 L ${mx1} ${my1} A 20 20 0 1 0 ${mx2} ${my2} Z`}
+        fill={fill}
+      />
+      {/* Eye */}
+      <circle cx={29} cy={16} r={2.5} fill="#1a1a1a" />
+      {/* Goal pulse ring */}
+      {atGoal && (
+        <circle cx={24} cy={24} r={20} fill="none" stroke={fill} strokeWidth={2} opacity={0.5}>
+          <animate attributeName="r" values="20;27;20" dur="0.6s" repeatCount="3" />
+          <animate attributeName="opacity" values="0.5;0;0.5" dur="0.6s" repeatCount="3" />
+        </circle>
+      )}
+    </svg>
+  );
+}
+
 // ─── Robot component ────────────────────────────────────────────────
 // Three-layer structure keeps CSS animation and rotation on separate divs
 // so keyframe `transform` values never override the rotation.
-function Robot({ robot, isMoving, atGoal, character }: { robot: RobotState; isMoving: boolean; atGoal: boolean; character?: string }) {
+function Robot({ robot, isMoving, atGoal, character, theme = 'space' }: { robot: RobotState; isMoving: boolean; atGoal: boolean; character?: string; theme?: 'space' | 'forest' | 'pirate' }) {
   const rotate = DIR_ANGLES[robot.dir];
   return (
     // Outer: position only — transitions left/top smoothly
@@ -227,24 +259,7 @@ function Robot({ robot, isMoving, atGoal, character }: { robot: RobotState; isMo
               {character}
             </span>
           ) : (
-            <svg width={48} height={48} viewBox="0 0 48 48">
-              <ellipse cx={24} cy={44} rx={14} ry={3} fill="rgba(99,102,241,0.3)" />
-              <rect x={8} y={14} width={32} height={26} rx={8} fill="#6366f1" />
-              <rect x={10} y={16} width={28} height={22} rx={6} fill="#818cf8" opacity={0.3} />
-              <rect x={12} y={4} width={24} height={16} rx={6} fill="#818cf8" />
-              <line x1={24} y1={4} x2={24} y2={0} stroke="#c7d2fe" strokeWidth={2} />
-              <circle cx={24} cy={0} r={3} fill="#fbbf24">
-                <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite" />
-              </circle>
-              <circle cx={17} cy={12} r={4} fill="#1e1b4b" />
-              <circle cx={31} cy={12} r={4} fill="#1e1b4b" />
-              <circle cx={18} cy={11} r={1.5} fill="white" />
-              <circle cx={32} cy={11} r={1.5} fill="white" />
-              {atGoal && <path d="M17 17 Q24 23 31 17" fill="none" stroke="#fbbf24" strokeWidth={2} strokeLinecap="round" />}
-              <polygon points="24,40 18,48 30,48" fill="#fbbf24" opacity={0.8} />
-              <rect x={4} y={18} width={6} height={14} rx={3} fill="#6366f1" />
-              <rect x={38} y={18} width={6} height={14} rx={3} fill="#6366f1" />
-            </svg>
+            <PacMan isMoving={isMoving} atGoal={atGoal} theme={theme} />
           )}
         </div>
       </div>
@@ -255,7 +270,7 @@ function Robot({ robot, isMoving, atGoal, character }: { robot: RobotState; isMo
 // ─── Main GridGame ──────────────────────────────────────────────────
 export default function GridGame({ grid, cols, rows, goal, robotStart, robotDir, frames, theme = 'space', character }: Props) {
   const [frameIdx, setFrameIdx] = useState(0);
-  const [message, setMessage] = useState(character ? `Ready! ${character}` : 'Ready! 🤖');
+  const [message, setMessage] = useState(character ? `Ready! ${character}` : 'Ready!');
   const [isMoving, setIsMoving] = useState(false);
   const [dustParticles, setDustParticles] = useState<{ x: number; y: number; id: number; key: number }[]>([]);
   const [showFireworks, setShowFireworks] = useState(false);
@@ -279,7 +294,7 @@ export default function GridGame({ grid, cols, rows, goal, robotStart, robotDir,
   useEffect(() => {
     if (frames.length === 0) {
       setFrameIdx(0);
-      setMessage(character ? `Ready! ${character}` : 'Ready! 🤖');
+      setMessage(character ? `Ready! ${character}` : 'Ready!');
       setShowFireworks(false);
       return;
     }
@@ -370,7 +385,7 @@ export default function GridGame({ grid, cols, rows, goal, robotStart, robotDir,
             <DustParticle key={p.key} x={p.x} y={p.y} id={p.id} />
           ))}
 
-          <Robot robot={currentRobot} isMoving={isMoving} atGoal={atGoal} character={character} />
+          <Robot robot={currentRobot} isMoving={isMoving} atGoal={atGoal} character={character} theme={theme} />
 
           {showFireworks && (
             <Fireworks x={currentRobot.col * CELL_SIZE} y={currentRobot.row * CELL_SIZE} />
