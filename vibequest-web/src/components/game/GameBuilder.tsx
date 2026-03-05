@@ -244,6 +244,7 @@ ${template?.baseHtml ?? ''}`,
         attempts={rounds}
         tier={tier}
         childId={childId}
+        finalCode={currentHtml}
         onNext={() => router.push('/dashboard')}
         onReplay={() => {
           setShowVictory(false);
@@ -278,11 +279,13 @@ ${template?.baseHtml ?? ''}`,
                 <button
                   key={t.id}
                   onClick={() => selectTemplate(t.id)}
-                  className="p-6 rounded-3xl border-2 hover:scale-105 transition-all text-left group"
+                  className="p-6 rounded-3xl border-2 hover:scale-[1.04] transition-all text-left group vq-card-hover"
                   style={{ background: 'var(--vq-card)', borderColor: 'var(--vq-border)' }}
+                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--vq-primary)')}
+                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--vq-border)')}
                 >
-                  <span className="text-5xl block mb-3 group-hover:scale-110 transition-transform">{t.emoji}</span>
-                  <h3 className="font-bold text-lg mb-1" style={{ color: 'var(--vq-text)' }}>{t.name}</h3>
+                  <span className="text-5xl block mb-3 group-hover:scale-125 transition-transform drop-shadow-lg">{t.emoji}</span>
+                  <h3 className="font-bold text-lg mb-1 group-hover:text-[var(--vq-primary)] transition-colors" style={{ color: 'var(--vq-text)' }}>{t.name}</h3>
                   <p className="text-sm" style={{ color: 'var(--vq-muted)' }}>{t.description}</p>
                 </button>
               ))}

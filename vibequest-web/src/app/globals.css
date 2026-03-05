@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  /* VibeQuest brand colours — light mint palette */
+  /* VibeQuest brand colours — rich gradient palette */
   --vq-bg:           #F0FBF7;   /* very light mint cream */
   --vq-surface:      #FFFFFF;
   --vq-card:         #FFFFFF;
@@ -12,6 +12,8 @@
   --vq-accent-2:     #1fb38f;   /* sea-green */
   --vq-accent-3:     #FFD166;   /* sunny yellow */
   --vq-purple:       #7C4DFF;   /* vibrant purple */
+  --vq-blue:         #4FC3F7;   /* sky blue */
+  --vq-pink:         #FF6BB5;   /* hot pink */
   --vq-text:         #0D3D30;   /* dark green-tinted heading text */
   --vq-muted:        #4A8070;   /* muted body text */
 
@@ -32,7 +34,7 @@ body {
   line-height: 1.6;
 }
 
-/* ─── Floating bubble background (pure CSS) ───────────────────────── */
+/* ─── Floating bubble background (rich version) ──────────────────── */
 
 .vq-stars-bg {
   position: relative;
@@ -49,43 +51,85 @@ body {
 }
 
 .vq-stars-bg::before {
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(31,179,143,0.06) 0%, transparent 70%);
-  top: 10%;
-  left: 5%;
-  animation: bubble-float-1 18s ease-in-out infinite;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(31,179,143,0.07) 0%, rgba(124,77,255,0.03) 50%, transparent 70%);
+  top: 5%;
+  left: -5%;
+  animation: bubble-float-1 20s ease-in-out infinite;
 }
 
 .vq-stars-bg::after {
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(31,179,143,0.05) 0%, transparent 70%);
-  bottom: 20%;
-  right: 10%;
-  animation: bubble-float-2 24s ease-in-out infinite;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(124,77,255,0.05) 0%, rgba(31,179,143,0.03) 50%, transparent 70%);
+  bottom: 10%;
+  right: -5%;
+  animation: bubble-float-2 26s ease-in-out infinite;
 }
 
 @keyframes bubble-float-1 {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  33%       { transform: translate(40px, -60px) scale(1.1); }
-  66%       { transform: translate(-20px, -30px) scale(0.95); }
+  33%       { transform: translate(50px, -80px) scale(1.15); }
+  66%       { transform: translate(-30px, -40px) scale(0.9); }
 }
 
 @keyframes bubble-float-2 {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  33%       { transform: translate(-30px, -50px) scale(1.05); }
-  66%       { transform: translate(20px, -20px) scale(0.9); }
+  33%       { transform: translate(-40px, -60px) scale(1.1); }
+  66%       { transform: translate(30px, -20px) scale(0.85); }
 }
 
 /* ─── Mission type left-border colours ───────────────────────────── */
 .mission-border-game    { border-left: 4px solid #F97316; }
-.mission-border-debug   { border-left: 4px solid #EF4444; }
-.mission-border-remix   { border-left: 4px solid #EC4899; }
-.mission-border-spec    { border-left: 4px solid #3B82F6; }
-.mission-border-judge   { border-left: 4px solid #EAB308; }
 .mission-border-music   { border-left: 4px solid #22C55E; }
+.mission-border-app     { border-left: 4px solid #3B82F6; }
 .mission-border-default { border-left: 4px solid #A855F7; }
+
+/* ─── Glass card effect ──────────────────────────────────────────── */
+.vq-glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(200, 237, 228, 0.6);
+}
+
+/* ─── Gradient text ──────────────────────────────────────────────── */
+.vq-gradient-text {
+  background: linear-gradient(135deg, var(--vq-primary), var(--vq-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Glow effects ───────────────────────────────────────────────── */
+.vq-glow-primary {
+  box-shadow: 0 0 20px rgba(31, 179, 143, 0.15), 0 0 60px rgba(31, 179, 143, 0.05);
+}
+
+.vq-glow-purple {
+  box-shadow: 0 0 20px rgba(124, 77, 255, 0.15), 0 0 60px rgba(124, 77, 255, 0.05);
+}
+
+/* ─── Button hover gradient ──────────────────────────────────────── */
+.vq-btn-primary {
+  background: linear-gradient(135deg, var(--vq-primary), #17c9a0);
+  transition: all 0.2s ease;
+}
+.vq-btn-primary:hover {
+  background: linear-gradient(135deg, #17c9a0, var(--vq-primary));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(31, 179, 143, 0.3);
+}
+
+/* ─── Card hover ─────────────────────────────────────────────────── */
+.vq-card-hover {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.vq-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(13, 61, 48, 0.08), 0 4px 12px rgba(31, 179, 143, 0.06);
+}
 
 /* ─── VibeQuest Keyframe Animations ──────────────────────────────────── */
 
@@ -128,56 +172,9 @@ body {
   50% { opacity: 1; transform: scale(1.2); }
 }
 
-@keyframes shooting-star {
-  0% { opacity: 0; transform: translateX(0) translateY(0); }
-  10% { opacity: 1; }
-  70% { opacity: 1; }
-  100% { opacity: 0; transform: translateX(200px) translateY(100px); }
-}
-
 @keyframes pulse-glow {
   0%, 100% { filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.3)); }
   50% { filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.8)); }
-}
-
-@keyframes draw-line {
-  0% { stroke-dashoffset: 200; }
-  100% { stroke-dashoffset: 0; }
-}
-
-@keyframes hop {
-  0% { transform: translateX(0) translateY(0); }
-  30% { transform: translateX(var(--hop-x, 20px)) translateY(-20px); }
-  50% { transform: translateX(var(--hop-x, 20px)) translateY(0); }
-  100% { transform: translateX(var(--hop-x, 20px)) translateY(0); }
-}
-
-@keyframes wiggle-dance {
-  0%, 100% { transform: rotate(0deg); }
-  15% { transform: rotate(-12deg); }
-  30% { transform: rotate(12deg); }
-  45% { transform: rotate(-8deg); }
-  60% { transform: rotate(8deg); }
-  75% { transform: rotate(-4deg); }
-  90% { transform: rotate(4deg); }
-}
-
-@keyframes poof {
-  0% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.8); }
-  100% { opacity: 0; transform: scale(2.5); }
-}
-
-@keyframes fly-in-left {
-  0% { opacity: 0; transform: translateX(-120px) rotate(-20deg); }
-  60% { opacity: 1; transform: translateX(10px) rotate(3deg); }
-  100% { opacity: 1; transform: translateX(0) rotate(0deg); }
-}
-
-@keyframes fly-in-right {
-  0% { opacity: 0; transform: translateX(120px) rotate(20deg); }
-  60% { opacity: 1; transform: translateX(-10px) rotate(-3deg); }
-  100% { opacity: 1; transform: translateX(0) rotate(0deg); }
 }
 
 @keyframes shimmer {
@@ -200,6 +197,16 @@ body {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
+}
+
+@keyframes slide-up {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
 /* ─── Utility classes ──────────────────────────────────────────────── */
@@ -232,38 +239,8 @@ body {
   animation: twinkle 3s ease-in-out infinite;
 }
 
-.animate-shooting-star {
-  animation: shooting-star 1.5s linear forwards;
-}
-
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.animate-draw-line {
-  animation: draw-line 1.5s ease-out forwards;
-  stroke-dasharray: 200;
-  stroke-dashoffset: 200;
-}
-
-.animate-hop {
-  animation: hop 0.6s ease-in-out forwards;
-}
-
-.animate-wiggle-dance {
-  animation: wiggle-dance 0.8s ease-in-out;
-}
-
-.animate-poof {
-  animation: poof 0.5s ease-out forwards;
-}
-
-.animate-fly-in-left {
-  animation: fly-in-left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-.animate-fly-in-right {
-  animation: fly-in-right 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .animate-shimmer {
@@ -283,4 +260,27 @@ body {
 .animate-gradient-shift {
   background-size: 200% 200%;
   animation: gradient-shift 4s ease infinite;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+/* ─── Scrollbar styling ──────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--vq-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vq-muted);
 }

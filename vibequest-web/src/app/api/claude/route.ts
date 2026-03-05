@@ -1,9 +1,8 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  translateToCode, generateMission, generateLessonSummary, builderIterate, gameBuilderIterate,
-  debugIterate, remixIterate, evaluateSpec, buildFromSpec, generateVariants, evaluateJudgement,
-  musicIterate, generateAvatar, animatorIterate,
+  translateToCode, generateMission, generateLessonSummary,
+  gameBuilderIterate, musicIterate, generateAvatar,
   Difficulty, Tier
 } from '@/lib/claude';
 import { containsInappropriate, CONTENT_BLOCKED_MSG } from '@/lib/contentFilter';
@@ -43,23 +42,12 @@ export async function POST(req: NextRequest) {
   const { action } = body;
 
   // ── Content safety gate ─────────────────────────────────────────────
-  // Extract the child-supplied free text for the current action and check
-  // it before anything reaches the AI. Returns a friendly 400 on a hit.
   const userText: string = (() => {
     switch (action) {
-      case 'translate':      return body.userDescription ?? '';
-      case 'debug_check':
-      case 'remix_iterate':
-      case 'music_iterate':
-      case 'animate':        return body.kidDescription ?? '';
-      case 'spec_evaluate':
-      case 'spec_build':     return body.spec ?? '';
-      case 'judge_generate': return body.missionSpec ?? '';
-      case 'judge_evaluate': return body.kidReasoning ?? '';
-      case 'generate_avatar':return body.description ?? '';
-      case 'builder_iterate':
+      case 'translate':       return body.userDescription ?? '';
+      case 'music_iterate':   return body.kidDescription ?? '';
+      case 'generate_avatar': return body.description ?? '';
       case 'game_builder': {
-        // conversation is [{role, content}] — check the last user message
         const msgs: { role: string; content: string }[] = body.conversation ?? [];
         const last = [...msgs].reverse().find(m => m.role === 'user');
         return last?.content ?? '';
@@ -104,51 +92,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(result);
     }
 
-    if (action === 'builder_iterate') {
-      const { conversation, tier } = body;
-      const result = await builderIterate(conversation, tier);
-      return NextResponse.json(result);
-    }
-
     if (action === 'game_builder') {
       const { conversation, tier } = body;
       const result = await gameBuilderIterate(conversation, tier);
-      return NextResponse.json(result);
-    }
-
-    if (action === 'debug_check') {
-      const { buggyCode, kidDescription, missionContext, tier } = body;
-      const result = await debugIterate(buggyCode, kidDescription, missionContext, tier as Tier);
-      return NextResponse.json(result);
-    }
-
-    if (action === 'remix_iterate') {
-      const { originalCode, currentCode, kidDescription, challenges, tier } = body;
-      const result = await remixIterate(originalCode, currentCode, kidDescription, challenges, tier as Tier);
-      return NextResponse.json(result);
-    }
-
-    if (action === 'spec_evaluate') {
-      const { spec, missionContext, tier } = body;
-      const result = await evaluateSpec(spec, missionContext, tier as Tier);
-      return NextResponse.json(result);
-    }
-
-    if (action === 'spec_build') {
-      const { spec, missionContext, tier } = body;
-      const result = await buildFromSpec(spec, missionContext, tier as Tier);
-      return NextResponse.json(result);
-    }
-
-    if (action === 'judge_generate') {
-      const { missionSpec, tier } = body;
-      const result = await generateVariants(missionSpec, tier as Tier);
-      return NextResponse.json(result);
-    }
-
-    if (action === 'judge_evaluate') {
-      const { pickedIndex, correctIndex, kidReasoning, flaws, tier } = body;
-      const result = await evaluateJudgement(pickedIndex, correctIndex, kidReasoning, flaws, tier as Tier);
       return NextResponse.json(result);
     }
 
@@ -161,12 +107,6 @@ export async function POST(req: NextRequest) {
     if (action === 'generate_avatar') {
       const { description } = body;
       const result = await generateAvatar(description);
-      return NextResponse.json(result);
-    }
-
-    if (action === 'animate') {
-      const { svgContent, canvasDataUrl, kidDescription, tier } = body;
-      const result = await animatorIterate(svgContent ?? '', canvasDataUrl ?? '', kidDescription ?? '', tier as Tier);
       return NextResponse.json(result);
     }
 

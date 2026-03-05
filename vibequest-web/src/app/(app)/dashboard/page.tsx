@@ -196,15 +196,7 @@ export default function DashboardPage() {
   function missionTypeLabel(type?: string) {
     if (type === 'game-builder') return '🎮 game';
     if (type === 'music') return '🎵 music';
-    if (type === 'debug') return '🐛 debug';
-    if (type === 'spec') return '📋 spec';
-    if (type === 'judge') return '⚖️ judge';
-    if (type === 'remix') return '🎨 remix';
-    if (type === 'builder') return '💬 builder';
-    if (type === 'grid') return '🕹️ maze';
-    if (type === 'code') return '💻 code';
     if (type === 'app') return '📱 app';
-    if (type === 'animate') return '🖼️ animate';
     return '💡 quest';
   }
 
@@ -309,11 +301,11 @@ export default function DashboardPage() {
             {/* Stats row */}
             <div className="grid grid-cols-3 gap-4 mb-6">
               {[
-                { label: 'Missions Done', value: completedIds.size, emoji: '✅', accent: 'var(--vq-primary)' },
-                { label: 'Season Quests', value: seasonMissions.length, emoji: '🗺️', accent: 'var(--vq-purple)' },
-                { label: 'Badges Earned', value: badges.length, emoji: '🏅', accent: 'var(--vq-accent-3)' },
-              ].map(({ label, value, emoji, accent }) => (
-                <div key={label} className="rounded-3xl p-5 text-center" style={{ background: 'var(--vq-card)', border: '1px solid var(--vq-border)' }}>
+                { label: 'Missions Done', value: completedIds.size, emoji: '✅', accent: 'var(--vq-primary)', glow: 'vq-glow-primary' },
+                { label: 'Season Quests', value: seasonMissions.length, emoji: '🗺️', accent: 'var(--vq-purple)', glow: 'vq-glow-purple' },
+                { label: 'Badges Earned', value: badges.length, emoji: '🏅', accent: 'var(--vq-accent-3)', glow: '' },
+              ].map(({ label, value, emoji, accent, glow }) => (
+                <div key={label} className={`rounded-3xl p-5 text-center vq-card-hover ${glow}`} style={{ background: 'var(--vq-card)', border: '1px solid var(--vq-border)' }}>
                   <div className="text-3xl mb-1">{emoji}</div>
                   <div className="text-3xl font-extrabold" style={{ color: accent }}>{value}</div>
                   <div className="text-sm mt-1" style={{ color: 'var(--vq-muted)' }}>{label}</div>
@@ -323,18 +315,18 @@ export default function DashboardPage() {
 
             {/* XP + Level bar */}
             {totalXp > 0 && (
-              <div className="rounded-2xl p-5 mb-6" style={{ background: 'var(--vq-card)', border: '1px solid var(--vq-border)' }}>
+              <div className="rounded-2xl p-5 mb-6 vq-glow-primary" style={{ background: 'var(--vq-card)', border: '1px solid var(--vq-border)' }}>
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <span className="font-bold" style={{ color: 'var(--vq-text)' }}>{levelInfo.levelName}</span>
+                    <span className="font-bold vq-gradient-text text-lg">{levelInfo.levelName}</span>
                     <span className="text-sm ml-2" style={{ color: 'var(--vq-muted)' }}>Level {levelInfo.level}</span>
                   </div>
-                  <span className="text-sm" style={{ color: 'var(--vq-muted)' }}>{totalXp} XP total</span>
+                  <span className="text-sm font-bold" style={{ color: 'var(--vq-primary)' }}>{totalXp} XP</span>
                 </div>
-                <div className="rounded-full h-3" style={{ background: 'var(--vq-border)' }}>
+                <div className="rounded-full h-4 overflow-hidden" style={{ background: 'var(--vq-border)' }}>
                   <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${levelInfo.percent}%`, background: 'linear-gradient(to right, var(--vq-primary), var(--vq-purple))' }}
+                    className="h-full rounded-full transition-all duration-700 animate-gradient-shift"
+                    style={{ width: `${levelInfo.percent}%`, background: 'linear-gradient(90deg, var(--vq-primary), var(--vq-purple), var(--vq-primary))', backgroundSize: '200% 100%' }}
                   />
                 </div>
                 {levelInfo.level < 20 && (
@@ -413,15 +405,15 @@ export default function DashboardPage() {
             <div className="mb-6">
               <Link
                 href={`/sandbox?childId=${selectedChild.id}`}
-                className="flex items-center gap-4 rounded-2xl p-5 transition-all hover:shadow-md"
-                style={{ background: 'rgba(31,179,143,0.08)', border: '1px solid rgba(31,179,143,0.25)' }}
+                className="flex items-center gap-4 rounded-2xl p-5 transition-all vq-card-hover"
+                style={{ background: 'linear-gradient(135deg, rgba(31,179,143,0.08), rgba(124,77,255,0.06))', border: '1px solid rgba(31,179,143,0.25)' }}
               >
                 <span className="text-4xl">🎨</span>
                 <div>
-                  <p className="font-bold" style={{ color: 'var(--vq-text)' }}>Open Sandbox</p>
-                  <p className="text-sm" style={{ color: 'var(--vq-muted)' }}>Build anything — no mission, no rules, pure creation</p>
+                  <p className="font-bold vq-gradient-text">Open Sandbox</p>
+                  <p className="text-sm" style={{ color: 'var(--vq-muted)' }}>Build anything — games, music, apps — no rules, pure creation</p>
                 </div>
-                <span className="ml-auto" style={{ color: 'var(--vq-primary)' }}>→</span>
+                <span className="ml-auto text-xl" style={{ color: 'var(--vq-primary)' }}>→</span>
               </Link>
             </div>
 
@@ -458,32 +450,31 @@ export default function DashboardPage() {
                     );
 
                   if (isTodayHighlight) {
-                    // "Today's Challenge" row — highlighted
+                    // "Today's Challenge" row — highlighted with gradient
                     return (
                       <div
                         key={mission.id}
-                        className="rounded-2xl p-4 cursor-pointer transition-all hover:shadow-md"
-                        style={{ background: 'rgba(31,179,143,0.10)', border: '2px solid var(--vq-primary)' }}
+                        className="rounded-2xl p-4 cursor-pointer transition-all vq-card-hover vq-glow-primary"
+                        style={{ background: 'linear-gradient(135deg, rgba(31,179,143,0.12), rgba(124,77,255,0.06))', border: '2px solid var(--vq-primary)' }}
                         onClick={() => router.push(`/play/${selectedChild!.tier}/${mission.id}?childId=${selectedChild!.id}`)}
                       >
                         <div className="flex items-center gap-4">
-                          <div className="flex-shrink-0 w-12 h-12 rounded-xl flex flex-col items-center justify-center text-center" style={{ background: 'rgba(31,179,143,0.18)' }}>
-                            <span className="text-xs font-bold" style={{ color: 'var(--vq-primary)' }}>Day</span>
-                            <span className="text-lg font-extrabold" style={{ color: 'var(--vq-primary)' }}>{day}</span>
+                          <div className="flex-shrink-0 w-14 h-14 rounded-xl flex flex-col items-center justify-center text-center" style={{ background: 'linear-gradient(135deg, var(--vq-primary), #17c9a0)' }}>
+                            <span className="text-[10px] font-bold text-white/80">DAY</span>
+                            <span className="text-lg font-extrabold text-white">{day}</span>
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-0.5">
-                              <span className="text-xs font-bold px-2 py-0.5 rounded-full animate-pulse" style={{ background: 'var(--vq-primary)', color: 'white' }}>
+                              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full animate-pulse text-white" style={{ background: 'linear-gradient(90deg, var(--vq-primary), var(--vq-purple))' }}>
                                 TODAY
                               </span>
                               <span className="text-xs" style={{ color: 'var(--vq-muted)' }}>{missionTypeLabel(mission.type)}</span>
                             </div>
-                            <h3 className="font-bold leading-tight" style={{ color: 'var(--vq-text)' }}>{mission.title}</h3>
+                            <h3 className="font-bold leading-tight text-lg" style={{ color: 'var(--vq-text)' }}>{mission.title}</h3>
                             <p className="text-xs mt-0.5 line-clamp-1" style={{ color: 'var(--vq-muted)' }}>{mission.challenge}</p>
                           </div>
                           <button
-                            className="flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-colors"
-                            style={{ background: 'var(--vq-primary)' }}
+                            className="flex-shrink-0 px-6 py-3 rounded-xl text-sm font-bold text-white vq-btn-primary"
                           >
                             Play Now →
                           </button>

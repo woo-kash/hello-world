@@ -190,48 +190,6 @@ badge is one of: "Loop Legend", "Condition Crusher", "Function Finder", "Logic M
 }
 
 /**
- * Builder mode: multi-round conversation that generates a full HTML app.
- * Used for the AI App Builder mission where kids iterate on a web app.
- */
-export async function builderIterate(
-  conversation: BuilderMessage[],
-  tier: Tier = 3
-): Promise<BuilderResult> {
-  const systemPrompt = `You are VibeQuest's AI App Builder — a creative coding partner for kids (age ${tier === 3 ? '13-16' : '9-12'}).
-
-Your job: take the kid's description and generate a COMPLETE, WORKING single-file HTML app.
-
-RULES:
-1. Always respond with valid JSON: { "html": "...", "explanation": "...", "suggestions": [...] }
-2. The "html" field must contain a complete HTML document that works in a sandboxed iframe
-3. Include all CSS inline in a <style> tag and all JS inline in <script> tags
-4. Make it visually impressive! Use modern CSS (gradients, animations, shadows, border-radius)
-5. Use emoji liberally for visual flair
-6. The "explanation" field: explain what you built and what the kid can learn from it (2-3 sentences)
-7. The "suggestions" field: array of 2-3 specific improvement ideas the kid could request next
-8. When the kid asks for changes, modify the ENTIRE html to incorporate the change
-9. Never use external CDNs, APIs, or network requests — everything must be self-contained
-10. Include Google-fonts-like styling using system fonts for beautiful typography
-
-The app should work perfectly in a sandboxed iframe with allow-scripts only.
-Always respond with valid JSON only. No markdown fences. No extra text.`;
-
-  const messages = conversation.map(msg => ({
-    role: msg.role as 'user' | 'assistant',
-    content: msg.content,
-  }));
-
-  const message = await getClient().messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 8192,
-    system: systemPrompt,
-    messages,
-  });
-
-  return parseJSON((message.content[0] as { text: string }).text);
-}
-
-/**
  * Game Builder mode: modifies a game template based on kid's description.
  * Returns a complete, playable HTML game.
  */
@@ -243,34 +201,60 @@ export async function gameBuilderIterate(
     : tier === 2 ? '9-12 year olds. They can handle more detail.'
     : '13-16 year olds. They want full control.';
 
-  const systemPrompt = `You are VibeQuest's Game Builder AI — you help kids customize classic games.
+  const systemPrompt = `You are VibeQuest's Game Builder AI — you help kids customize classic games into stunning, polished creations.
 
 The kid will give you a base HTML game template and describe what they want to change.
-Your job: modify the template to match their vision and return a COMPLETE, WORKING game.
+Your job: modify the template to match their vision and return a COMPLETE, WORKING, VISUALLY IMPRESSIVE game.
 
 This is for ${ageNote}
 
 CRITICAL RULES:
 1. Always respond with valid JSON: { "html": "...", "explanation": "...", "suggestions": [...] }
 2. The "html" field must contain a COMPLETE, WORKING HTML game document
-3. The game MUST be fully playable — test all mechanics in your mind before returning
-4. Use Canvas or DOM rendering. All code inline in <script> tags
-5. Support keyboard controls (arrow keys / WASD / space)
-6. Include a score display, game over screen, and restart button
-7. Make it visually impressive with emoji, colors, and CSS effects
+3. The game MUST be fully playable — mentally test ALL mechanics before returning
+4. Use HTML5 Canvas for rendering. All CSS in <style>, all JS in <script> tags
+5. Support keyboard controls (arrow keys / WASD / space) AND touch controls for mobile
+6. Include a polished HUD: score counter, lives/health, combo multiplier
+7. Include a game-over screen with final score, high score (localStorage), and animated restart button
 8. The game must work in a sandboxed iframe with allow-scripts only
-9. No external CDNs, APIs, or network requests
+9. No external CDNs, APIs, or network requests — 100% self-contained
 10. Keep the core game mechanics working — only modify what the kid asks for
 11. The "explanation" field: describe what you changed in 1-2 kid-friendly sentences
-12. The "suggestions" field: 2-3 specific next improvements they could request
+12. The "suggestions" field: 2-3 specific, creative next improvements they could request
 
-GAME DESIGN TIPS:
+VISUAL QUALITY REQUIREMENTS — MAKE IT LOOK AMAZING:
 - Use requestAnimationFrame for smooth 60fps gameplay
-- Implement collision detection properly
-- Add visual feedback (screen shake, flash effects, particles)
-- Make scoring satisfying (big numbers, combos)
-- Add difficulty progression
-- Use emoji for characters and items — they render great on all devices
+- Add a gradient or starfield background (not flat colours)
+- Add particle effects: explosions on death, sparkle trails on collectibles, dust on landing
+- Screen shake on hit/death (brief canvas translate offset)
+- Smooth camera/viewport scrolling for platformers
+- Score pop-ups that float upward and fade (+10, +50, COMBO!)
+- Glowing effects on power-ups and collectibles (pulsing shadow/halo)
+- Animated title screen with "Press SPACE to start" prompt
+- Smooth transitions between states (fade in/out)
+- Use emoji for characters and items — they render great on all devices at any size
+- Use ctx.shadowBlur and ctx.shadowColor for glow effects on projectiles and pickups
+- Add subtle screen-wide effects: vignette overlay, scanlines for retro feel, or colour tint shifts
+- Make the UI beautiful: rounded score display, gradient health bars, animated combo counters
+
+GAMEPLAY QUALITY:
+- Implement collision detection properly with bounding-box or circle checks
+- Add difficulty progression: speed increases, more enemies, tighter patterns
+- Make scoring satisfying: big numbers, combo multipliers, streak bonuses
+- Add brief invincibility frames after taking damage (flashing effect)
+- Sound: use oscillator-based Web Audio API for simple SFX (jump, collect, hit, game-over jingle)
+- Add at least one collectible type and one hazard/enemy type
+- Game feel: responsive controls with no input lag, satisfying movement physics
+
+COMMON PROMPTS — handle these well:
+- "make it space themed" → dark starfield bg, asteroid enemies, rocket player, laser projectiles, nebula colours
+- "add power-ups" → shield (invincibility), magnet (auto-collect), 2x score, speed boost — with glow pickup effect
+- "make it harder" → faster enemies, more obstacles, shorter timers, boss wave every 5 levels
+- "make it underwater" → blue-green gradient, bubble particles, fish enemies, seaweed platforms, wavy motion
+- "add a dragon/boss" → large enemy sprite with health bar, attack patterns, phase changes
+- "make the character a [X]" → swap the emoji, adjust size if needed
+- "add explosions" → particle burst on enemy death (8-12 particles, random velocity, fade out)
+- "candy land / rainbow" → pastel gradients, candy emoji items, rainbow trail effects
 
 Always respond with valid JSON only. No markdown fences. No extra text.`;
 
@@ -289,216 +273,6 @@ Always respond with valid JSON only. No markdown fences. No extra text.`;
   return parseJSON((message.content[0] as { text: string }).text);
 }
 
-/**
- * Debug Detective: attempt to fix a bug based on the kid's description.
- */
-export interface DebugResult {
-  fixedCode: string;
-  resolved: boolean;
-  hint: string;
-  explanation: string;
-}
-
-export async function debugIterate(
-  buggyCode: string,
-  kidDescription: string,
-  missionContext: string,
-  tier: Tier = 1
-): Promise<DebugResult> {
-  const systemPrompt = `You are VibeQuest's Debug Detective AI. A kid is learning to debug by describing what they see going wrong.
-
-Your job: attempt a fix based ONLY on how well the kid described the bug.
-- If the description is precise and correct, fix the bug perfectly.
-- If the description is vague or wrong, apply a plausible but INCORRECT fix (so the kid learns to be more precise).
-- "resolved: true" only if the fix actually solves ALL the bugs.
-
-${TIER_PROMPTS[tier]}
-
-Return valid JSON only:
-{
-  "fixedCode": "complete fixed HTML document string",
-  "resolved": false,
-  "hint": "gentle hint if not resolved yet (empty string if resolved)",
-  "explanation": "1-2 sentences explaining what you did and why"
-}`;
-
-  const msg = await getClient().messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 4096,
-    system: systemPrompt,
-    messages: [{
-      role: 'user',
-      content: `Mission context: ${missionContext}\n\nBuggy code:\n${buggyCode}\n\nKid's description of the bug: "${kidDescription}"\n\nAttempt a fix based on their description.`,
-    }],
-  });
-
-  return parseJSON((msg.content[0] as { text: string }).text);
-}
-
-/**
- * Remix Studio: modify existing code based on the kid's description.
- */
-export interface RemixResult {
-  updatedCode: string;
-  completedChallenges: string[];
-  explanation: string;
-}
-
-export async function remixIterate(
-  originalCode: string,
-  currentCode: string,
-  kidDescription: string,
-  challenges: string[],
-  tier: Tier = 2
-): Promise<RemixResult> {
-  const systemPrompt = `You are VibeQuest's Remix Studio AI. A kid is learning to modify existing apps.
-
-Your job: take the current code and apply the kid's requested change. Then check which challenges from the list are now satisfied.
-
-${TIER_PROMPTS[tier]}
-
-Return valid JSON only:
-{
-  "updatedCode": "complete updated HTML document",
-  "completedChallenges": ["exact text of each challenge that is now satisfied"],
-  "explanation": "1-2 kid-friendly sentences about what you changed"
-}`;
-
-  const msg = await getClient().messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 4096,
-    system: systemPrompt,
-    messages: [{
-      role: 'user',
-      content: `Original code (for reference):\n${originalCode}\n\nCurrent code to modify:\n${currentCode}\n\nKid's change request: "${kidDescription}"\n\nChallenges to complete:\n${challenges.map((c, i) => `${i + 1}. ${c}`).join('\n')}\n\nApply the change and check which challenges are now satisfied.`,
-    }],
-  });
-
-  return parseJSON((msg.content[0] as { text: string }).text);
-}
-
-/**
- * Spec Writer: evaluate how complete/clear a spec is.
- */
-export interface SpecEvalResult {
-  score: number;
-  feedback: string;
-  missingElements: string[];
-}
-
-export async function evaluateSpec(
-  spec: string,
-  missionContext: string,
-  tier: Tier = 2
-): Promise<SpecEvalResult> {
-  const systemPrompt = `You are VibeQuest's Spec Evaluator. A kid is learning to write specifications before building.
-
-Score their spec from 0-10 based on:
-- Does it describe ALL features? (3 points)
-- Does it describe the UI/visual design? (2 points)
-- Does it handle edge cases? (2 points)
-- Is it specific enough for an AI to build from? (3 points)
-
-${TIER_PROMPTS[tier]}
-
-Return valid JSON only:
-{
-  "score": 0,
-  "feedback": "encouraging feedback + specific what was good",
-  "missingElements": ["specific things they forgot to mention"]
-}`;
-
-  const msg = await getClient().messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 512,
-    system: systemPrompt,
-    messages: [{
-      role: 'user',
-      content: `Mission: ${missionContext}\n\nKid's spec:\n"${spec}"\n\nEvaluate the spec.`,
-    }],
-  });
-
-  return parseJSON((msg.content[0] as { text: string }).text);
-}
-
-/**
- * Spec Writer: build an app from a spec.
- */
-export async function buildFromSpec(
-  spec: string,
-  missionContext: string,
-  tier: Tier = 2
-): Promise<BuilderResult> {
-  const systemPrompt = `You are VibeQuest's builder. Build a complete HTML app exactly matching this spec.
-
-Rules: Complete self-contained HTML with inline CSS and JS. No external CDNs. Works in a sandboxed iframe. Visually polished.
-
-${TIER_PROMPTS[tier]}
-
-Return valid JSON: { "html": "...", "explanation": "...", "suggestions": [...] }`;
-
-  const msg = await getClient().messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 4096,
-    system: systemPrompt,
-    messages: [{
-      role: 'user',
-      content: `Mission context: ${missionContext}\n\nBuild this exactly:\n${spec}`,
-    }],
-  });
-
-  return parseJSON((msg.content[0] as { text: string }).text);
-}
-
-/**
- * AI Judge: generate 3 variants of an app (1 good, 2 flawed).
- */
-export interface JudgeVariant {
-  code: string;
-  label: string;
-}
-
-export interface JudgeVariantsResult {
-  variants: JudgeVariant[];
-  correctIndex: number;
-  flaws: string[];
-}
-
-export async function generateVariants(
-  missionSpec: string,
-  tier: Tier = 2
-): Promise<JudgeVariantsResult> {
-  const systemPrompt = `You are VibeQuest's AI Judge generator. Create 3 versions of the same app.
-
-- Version A: best version — correct, well-designed, works perfectly
-- Version B: has a subtle UX problem (e.g. bad button placement, confusing label)
-- Version C: has a functional bug (e.g. wrong calculation, broken feature)
-
-${TIER_PROMPTS[tier]}
-
-Return valid JSON:
-{
-  "variants": [
-    {"code": "complete HTML for version A", "label": "Version A"},
-    {"code": "complete HTML for version B", "label": "Version B"},
-    {"code": "complete HTML for version C", "label": "Version C"}
-  ],
-  "correctIndex": 0,
-  "flaws": ["what is wrong with B", "what is wrong with C"]
-}`;
-
-  const msg = await getClient().messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 8192,
-    system: systemPrompt,
-    messages: [{
-      role: 'user',
-      content: `Build 3 variants of: ${missionSpec}`,
-    }],
-  });
-
-  return parseJSON((msg.content[0] as { text: string }).text);
-}
 
 /**
  * Music Builder: iterate on a song's SETTINGS based on the kid's description.
@@ -602,93 +376,3 @@ Create a simple, friendly, colourful SVG avatar based on the description.
   return { svg };
 }
 
-/**
- * AI Judge: evaluate the kid's reasoning for picking a variant.
- */
-export interface JudgeEvalResult {
-  correct: boolean;
-  feedback: string;
-  explanation: string;
-}
-
-export async function evaluateJudgement(
-  pickedIndex: number,
-  correctIndex: number,
-  kidReasoning: string,
-  flaws: string[],
-  tier: Tier = 2
-): Promise<JudgeEvalResult> {
-  const systemPrompt = `You are VibeQuest's AI Judge. A kid picked what they think is the best app and explained why.
-
-Evaluate whether they picked correctly AND whether their reasoning shows real understanding.
-
-${TIER_PROMPTS[tier]}
-
-Return valid JSON: { "correct": true, "feedback": "encouraging response", "explanation": "teach them what to look for" }`;
-
-  const msg = await getClient().messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 512,
-    system: systemPrompt,
-    messages: [{
-      role: 'user',
-      content: `Kid picked: Version ${['A','B','C'][pickedIndex]}\nCorrect answer: Version ${['A','B','C'][correctIndex]}\nKid's reasoning: "${kidReasoning}"\nKnown flaws: ${flaws.join('; ')}`,
-    }],
-  });
-
-  return parseJSON((msg.content[0] as { text: string }).text);
-}
-
-/**
- * Animator Studio: take an SVG scene the kid drew + their description
- * and return a fully animated HTML page.
- */
-export interface AnimatorResult {
-  html: string;
-  explanation: string;
-}
-
-const ANIMATOR_TIER_PROMPTS: Record<Tier, string> = {
-  1: 'Keep the animations simple and joyful: 1-2 elements moving, gentle CSS transitions, no more than 3 seconds per loop.',
-  2: 'Use requestAnimationFrame loops for fluid motion. Coordinate multiple elements. Vary speeds and directions.',
-  3: 'Use physics-inspired techniques: velocity, gravity, bounce, particle systems. Create sophisticated, coordinated animations.',
-};
-
-export async function animatorIterate(
-  svgContent: string,
-  canvasDataUrl: string,
-  description: string,
-  tier: Tier
-): Promise<AnimatorResult> {
-  const systemPrompt = `You are an animation wizard for kids. You receive an SVG drawing a child made and their description of how it should move.
-
-Return a COMPLETE self-contained HTML page that embeds the SVG drawing and brings it to life using CSS animations and/or requestAnimationFrame.
-
-RULES:
-- Keep the original SVG shapes recognisable — do not redesign them
-- Animate exactly what the child described, and add subtle ambient animations to everything else
-- The HTML must be 100% self-contained (no external imports)
-- Use a pleasant background that complements the drawing
-- ${ANIMATOR_TIER_PROMPTS[tier]}
-
-Always respond with valid JSON only. No markdown fences. No extra text.
-{ "html": "<!DOCTYPE html>...", "explanation": "friendly one-sentence description of what you animated" }`;
-
-  const userContent = `Here is the child's SVG drawing:\n\n${svgContent}\n\n${canvasDataUrl ? 'They also drew freehand strokes on a canvas layer above the shapes.\n\n' : ''}The child wants: "${description}"\n\nPlease animate this scene!`;
-
-  const msg = await getClient().messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 8192,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: userContent }],
-  });
-
-  const raw = (msg.content[0] as { text: string }).text;
-  try {
-    return parseJSON(raw);
-  } catch {
-    const htmlMatch = raw.match(/<!DOCTYPE html>[\s\S]*/i);
-    if (htmlMatch) return { html: htmlMatch[0], explanation: 'Your drawing has been animated!' };
-    return { html: raw, explanation: 'Your drawing has been animated!' };
-  }
-}

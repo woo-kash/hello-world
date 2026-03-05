@@ -1,25 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getMissionById } from '@/lib/missions';
-import { executeBlocks, AnimationFrame } from '@/lib/gameEngine';
-import { executeScene, SceneFrame } from '@/lib/sceneEngine';
-import GridGame from '@/components/game/GridGame';
-import LogicBlockTree from '@/components/game/LogicBlockTree';
-import StarsGame from '@/components/game/StarsGame';
-import SceneGame from '@/components/game/SceneGame';
 import LivePreview from '@/components/game/LivePreview';
 import VoiceInput from '@/components/ui/VoiceInput';
-import BuilderView from '@/components/game/BuilderView';
 import GameBuilder from '@/components/game/GameBuilder';
 import MusicBuilder from '@/components/game/MusicBuilder';
-import AnimatorView from '@/components/game/AnimatorView';
-import DebugView from '@/components/game/DebugView';
-import RemixView from '@/components/game/RemixView';
-import SpecView from '@/components/game/SpecView';
-import JudgeView from '@/components/game/JudgeView';
 import VictoryScreen from '@/components/game/VictoryScreen';
 
 interface AIResult {
@@ -44,8 +32,6 @@ export default function PlayPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AIResult | null>(null);
-  const [frames, setFrames] = useState<AnimationFrame[]>([]);
-  const [sceneFrames, setSceneFrames] = useState<SceneFrame[]>([]);
   const [attempts, setAttempts] = useState(0);
   const [showVictory, setShowVictory] = useState(false);
   const [showCode, setShowCode] = useState(false);
@@ -59,17 +45,7 @@ export default function PlayPage() {
     );
   }
 
-  // Builder missions get their own full-page layout
-  if (mission.type === 'builder') {
-    return (
-      <BuilderView
-        mission={mission}
-        childId={childId}
-        tier={tier}
-      />
-    );
-  }
-
+  // Game builder missions get their own full-page layout
   if (mission.type === 'game-builder') {
     return (
       <GameBuilder
@@ -80,31 +56,13 @@ export default function PlayPage() {
     );
   }
 
-  if (mission.type === 'debug') {
-    return <DebugView mission={mission} childId={childId} tier={tier} />;
-  }
-
-  if (mission.type === 'remix') {
-    return <RemixView mission={mission} childId={childId} tier={tier} />;
-  }
-
-  if (mission.type === 'spec') {
-    return <SpecView mission={mission} childId={childId} tier={tier} />;
-  }
-
-  if (mission.type === 'judge') {
-    return <JudgeView mission={mission} childId={childId} tier={tier} />;
-  }
-
+  // Music missions get MusicBuilder
   if (mission.type === 'music') {
     return <MusicBuilder mission={mission} childId={childId} tier={tier} />;
   }
 
-  if (mission.type === 'animate') {
-    return <AnimatorView mission={mission} childId={childId} tier={tier} />;
-  }
-
-  const difficulty = mission!.difficulty as 'easy' | 'medium' | 'hard';
+  // App missions — describe → AI generates → LivePreview
+  const difficulty = mission.difficulty as 'easy' | 'medium' | 'hard';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -113,8 +71,6 @@ export default function PlayPage() {
     setLoading(true);
     setError('');
     setResult(null);
-    setFrames([]);
-    setSceneFrames([]);
 
     try {
       const res = await fetch('/api/claude', {
@@ -142,34 +98,7 @@ export default function PlayPage() {
       setAttempts(newAttempts);
       setResult(data);
 
-      // Run animation for grid missions
-      const m = mission!;
-      let gridSuccess = false;
-      if (m.type === 'grid' && m.grid && data.logicBlocks) {
-        const animFrames = executeBlocks(data.logicBlocks, {
-          grid: m.grid,
-          cols: m.cols!,
-          rows: m.rows!,
-          goal: m.goal!,
-          robotStart: m.robotStart!,
-          robotDir: m.robotDir,
-        });
-        setFrames(animFrames);
-        // For grid missions: success only if the character actually reaches the goal
-        gridSuccess = animFrames.length > 0 && (animFrames[animFrames.length - 1].atGoal ?? false);
-      }
-
-      // Legacy: logic missions with sceneConfig (not used in Spring 2026 season)
-      if ((m.type as string) === 'logic' && m.sceneConfig && data.logicBlocks) {
-        const scenes = executeScene(m.sceneConfig.sceneId, data.logicBlocks);
-        setSceneFrames(scenes);
-      }
-
-      // Grid missions: trust the game engine result, not the AI
-      // All other missions: trust the AI's success flag
-      const actualSuccess = m.type === 'grid' ? gridSuccess : data.success;
-
-      if (actualSuccess) {
+      if (data.success) {
         // Save progress
         if (childId) {
           await fetch('/api/progress', {
@@ -178,7 +107,7 @@ export default function PlayPage() {
             body: JSON.stringify({ childId, missionId, completed: true, attempts: newAttempts }),
           });
         }
-        setTimeout(() => setShowVictory(true), m.type === 'grid' ? 2500 : 1200);
+        setTimeout(() => setShowVictory(true), 1200);
       }
     } catch {
       setError('Oops! Something went wrong. Try again!');
@@ -188,14 +117,10 @@ export default function PlayPage() {
   }
 
   const placeholders: Record<1 | 2 | 3, string> = {
-    1: 'Tell ROVI what to do in your own words! e.g. "Check if there is a wall ahead, then turn right and move forward"',
-    2: 'Write your solution or describe it. e.g. "loop through items, if item is a carrot eat it, else skip"',
-    3: 'Describe exactly what you want the AI to build. Be specific — the more detail, the better!',
+    1: 'Describe what you want the AI to build! Be creative and specific.',
+    2: 'Describe your app in detail. The more specific you are, the better the AI builds it!',
+    3: 'Write a detailed spec or prompt. Be precise — the AI will follow your instructions exactly.',
   };
-
-  // Determine if this mission uses LivePreview (code/app types)
-  const usesLivePreview = mission.type === 'code' || mission.type === 'app';
-  // Legacy: stars/logic types no longer used in Spring 2026 season
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--vq-bg)' }}>
@@ -237,13 +162,8 @@ export default function PlayPage() {
           {/* Input */}
           <form onSubmit={handleSubmit} className="space-y-3">
             <label className="font-semibold text-sm block" style={{ color: 'var(--vq-text)' }}>
-              {tier === 1 ? '🗣️ Tell the AI your solution:' : tier === 2 ? '✍️ Write your solution:' : '🎯 Write your prompt:'}
+              {tier === 1 ? '🗣️ Describe what you want:' : tier === 2 ? '✍️ Write your description:' : '🎯 Write your prompt:'}
             </label>
-
-            {/* Tier 2: show starter code */}
-            {tier === 2 && mission.starterCode && (
-              <pre className="text-xs rounded-xl p-4 overflow-x-auto" style={{ background: '#0D3D30', color: '#4ECDC4' }}>{mission.starterCode}</pre>
-            )}
 
             <VoiceInput
               value={input}
@@ -263,9 +183,9 @@ export default function PlayPage() {
               style={{ background: 'var(--vq-primary)' }}
             >
               {loading ? (
-                <span className="animate-pulse">✨ Thinking...</span>
+                <span className="animate-pulse">✨ Building...</span>
               ) : (
-                <>Run it! ✨ <span className="text-sm font-normal opacity-70">(⌘+Enter)</span></>
+                <>Build it! ✨ <span className="text-sm font-normal opacity-70">(⌘+Enter)</span></>
               )}
             </button>
           </form>
@@ -308,65 +228,16 @@ export default function PlayPage() {
           )}
         </div>
 
-        {/* Right: Game visualization */}
+        {/* Right: Live Preview */}
         <div className="space-y-4">
-          {/* Grid game */}
-          {mission.type === 'grid' && (
-            <GridGame
-              grid={mission.grid!}
-              cols={mission.cols!}
-              rows={mission.rows!}
-              goal={mission.goal!}
-              robotStart={mission.robotStart!}
-              robotDir={mission.robotDir ?? 'right'}
-              frames={frames}
-              theme={mission.theme}
-              character={mission.character}
-            />
-          )}
-
-          {/* Legacy: Stars game (not in Spring 2026 season) */}
-          {(mission.type as string) === 'stars' && (
-            <StarsGame
-              totalStars={5}
-              success={result?.success ?? false}
-              loading={loading}
-            />
-          )}
-
-          {/* Legacy: Logic missions with SceneGame (not in Spring 2026 season) */}
-          {(mission.type as string) === 'logic' && mission.sceneConfig && (
-            <SceneGame
-              sceneConfig={mission.sceneConfig}
-              frames={sceneFrames}
-              loading={loading}
-            />
-          )}
-
-          {/* Code/App missions: LivePreview */}
-          {usesLivePreview && (
-            <LivePreview
-              code={result?.code ?? ''}
-              loading={loading}
-            />
-          )}
-
-          {/* Logic block tree — collapsible "peek under the hood" */}
-          {result?.logicBlocks && (
-            <details className="rounded-2xl overflow-hidden" style={{ background: 'var(--vq-card)', border: '1px solid var(--vq-border)' }}>
-              <summary className="px-5 py-3 text-sm cursor-pointer transition-colors flex items-center gap-2 hover:text-[var(--vq-text)]" style={{ color: 'var(--vq-muted)' }}>
-                <span>🔍</span>
-                <span>Peek under the hood — Logic Blocks</span>
-              </summary>
-              <div className="px-5 pb-4">
-                <LogicBlockTree blocks={result.logicBlocks} />
-              </div>
-            </details>
-          )}
+          <LivePreview
+            code={result?.code ?? ''}
+            loading={loading}
+          />
         </div>
       </div>
 
-      {/* Victory overlay — shown on top of the game, not as a separate page */}
+      {/* Victory overlay */}
       {showVictory && (
         <VictoryScreen
           mission={mission}
@@ -379,9 +250,8 @@ export default function PlayPage() {
             setResult(null);
             setInput('');
             setAttempts(0);
-            setFrames([]);
-            setSceneFrames([]);
           }}
+          finalCode={result?.code}
         />
       )}
     </div>

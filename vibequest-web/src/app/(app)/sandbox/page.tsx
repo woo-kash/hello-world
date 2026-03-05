@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import GameBuilder from '@/components/game/GameBuilder';
-import BuilderView from '@/components/game/BuilderView';
+import MusicBuilder from '@/components/game/MusicBuilder';
 import type { Mission } from '@/lib/missions';
 
-type Template = 'game' | 'app' | 'tool' | 'blank';
+type Template = 'game' | 'music' | 'app';
 
 const GAME_SANDBOX_MISSION: Mission = {
   id: 'sandbox-game',
@@ -25,11 +25,27 @@ const GAME_SANDBOX_MISSION: Mission = {
   xp: 0,
 };
 
+const MUSIC_SANDBOX_MISSION: Mission = {
+  id: 'sandbox-music',
+  tier: 2,
+  difficulty: 'medium',
+  type: 'music',
+  title: '🎵 Sandbox — Music Studio',
+  story: 'No rules. No mission. Just make music.',
+  challenge: 'Describe the music you want to create. Change the tempo, instruments, and mood!',
+  concept: 'creative freedom',
+  winCondition: 'none — just create!',
+  starterHint: 'Describe a mood or genre: "A chill lo-fi beat with soft drums and a dreamy synth melody"',
+  primarySkill: 'precision-of-language',
+  xp: 0,
+};
+
 const APP_SANDBOX_MISSION: Mission = {
   id: 'sandbox-app',
-  tier: 3,
+  tier: 2,
   difficulty: 'medium',
-  type: 'builder',
+  type: 'game-builder',
+  gameTemplateId: 'platformer',
   title: '🛠️ Sandbox — Build an App',
   story: 'No rules. No mission. Build whatever you can imagine.',
   challenge: 'Describe the app you want to build and iterate until it\'s perfect.',
@@ -40,26 +56,10 @@ const APP_SANDBOX_MISSION: Mission = {
   xp: 0,
 };
 
-const TOOL_SANDBOX_MISSION: Mission = {
-  id: 'sandbox-tool',
-  tier: 3,
-  difficulty: 'easy',
-  type: 'builder',
-  title: '🔧 Sandbox — Build a Tool',
-  story: 'Build something useful — a calculator, a converter, a timer, anything!',
-  challenge: 'What tool would make your life easier? Build it!',
-  concept: 'creative freedom',
-  winCondition: 'none — just build!',
-  starterHint: 'Think of a small problem in your daily life. Build a tool that solves it!',
-  primarySkill: 'rapid-prototyping',
-  xp: 0,
-};
-
 const TEMPLATES: { id: Template; emoji: string; label: string; description: string }[] = [
   { id: 'game', emoji: '🎮', label: 'Game', description: 'Build a playable game — platformer, maze, space shooter, or something new' },
-  { id: 'app', emoji: '📱', label: 'App', description: 'Build a web app — productivity tool, dashboard, anything useful' },
-  { id: 'tool', emoji: '🔧', label: 'Tool', description: 'Build something that solves a real problem in your life' },
-  { id: 'blank', emoji: '✨', label: 'Blank Canvas', description: 'Start from scratch — complete creative freedom' },
+  { id: 'music', emoji: '🎵', label: 'Music', description: 'Compose a beat — describe the vibe and the AI builds it' },
+  { id: 'app', emoji: '🛠️', label: 'App', description: 'Build a web app — study tool, quiz, dashboard, anything' },
 ];
 
 export default function SandboxPage() {
@@ -71,16 +71,12 @@ export default function SandboxPage() {
     return <GameBuilder mission={GAME_SANDBOX_MISSION} childId={childId} tier={2} />;
   }
 
+  if (selected === 'music') {
+    return <MusicBuilder mission={MUSIC_SANDBOX_MISSION} childId={childId} tier={2} />;
+  }
+
   if (selected === 'app') {
-    return <BuilderView mission={APP_SANDBOX_MISSION} childId={childId} tier={3} />;
-  }
-
-  if (selected === 'tool') {
-    return <BuilderView mission={TOOL_SANDBOX_MISSION} childId={childId} tier={3} />;
-  }
-
-  if (selected === 'blank') {
-    return <BuilderView mission={{ ...APP_SANDBOX_MISSION, id: 'sandbox-blank', title: '✨ Sandbox — Blank Canvas', story: 'Start from nothing and build anything.', challenge: 'What will you create?', starterHint: 'The sky is the limit! Describe anything.' }} childId={childId} tier={3} />;
+    return <GameBuilder mission={APP_SANDBOX_MISSION} childId={childId} tier={2} />;
   }
 
   return (
@@ -99,7 +95,7 @@ export default function SandboxPage() {
           <p className="text-sm mt-2" style={{ color: 'var(--vq-muted)' }}>Pick a starting point and let your imagination run wild.</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           {TEMPLATES.map(t => (
             <button
               key={t.id}

@@ -87,8 +87,7 @@ export default function GalleryPage() {
                 <Link
                   key={c.id}
                   href={`/gallery/${c.id}`}
-                  className="group rounded-2xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-md"
-                  style={{ background: 'var(--vq-card)', border: '1px solid var(--vq-border)' }}
+                  className="group rounded-2xl overflow-hidden vq-card-hover vq-glass"
                 >
                   {/* Mini preview */}
                   <div className="h-40 overflow-hidden relative" style={{ background: 'var(--vq-bg)' }}>

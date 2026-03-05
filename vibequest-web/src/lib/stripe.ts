@@ -38,10 +38,12 @@ export const PLANS = {
 export type PlanKey = keyof typeof PLANS;
 
 export const FREE_MISSION_IDS = [
-  'mission-1',
-  'mission-2',
-  'mission-3',
-  // 3 free missions per tier (first mission of each tier)
-  'tier2-mission-1',
-  'tier3-mission-1',
+  // First 2 missions per tier are free (game + music)
+  'tier1-snake-attack',
+  'tier1-music-1',
+  'tier1-flap-harder',
+  'tier2-snake-remix',
+  'tier2-music-1',
+  'tier3-snake-studio',
+  'tier3-music-1',
 ];
